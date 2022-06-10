@@ -5,13 +5,14 @@
 #--------------------------------------------------------------------------
 
 from datetime import timedelta
+import concurrent
 import time
 import os
 import pytest
 from dotenv import load_dotenv
 #from argparse import ArgumentParser
 
-from azure.servicebus import AutoLockRenewer, ServiceBusClient
+from azure.servicebus import AutoLockRenewer, ServiceBusClient, ServiceBusMessage
 from azure.servicebus._common.constants import ServiceBusReceiveMode
 from app_insights_metric import AzureMonitorMetric
 
@@ -326,6 +327,45 @@ def test_stress_queue_check_for_dropped_messages():
     result = stress_test.run()
     assert(result.total_sent > 0)
     assert(result.total_received > 0)
+
+# 1. Send 20000
+# 2. Receive forever and detach every 30 secs
+@pytest.mark.liveTest
+@pytest.mark.live_test_only
+def test_stress_queue_check_detach_receive():
+    sb_client = ServiceBusClient.from_connection_string(
+        SERVICE_BUS_CONNECTION_STR, logging_enable=LOGGING_ENABLE)
+    sender = sb_client.get_queue_sender(SERVICEBUS_QUEUE_NAME)
+    batch_message = sender.create_message_batch()
+    for i in range(50):
+        try:
+            batch_message.add_message(ServiceBusMessage(b"a" * 1024, application_properties={'num': i}))
+        except ValueError:
+            # ServiceBusMessageBatch object reaches max_size.
+            # New ServiceBusMessageBatch object can be created here to send more data.
+            sender.send_messages(batch_message)
+            batch_message = sender.create_message_batch()
+            break
+    sender.send_messages(batch_message)
+    def receive():
+        receiver = sb_client.get_queue_receiver(SERVICEBUS_QUEUE_NAME)
+        msgs_received = {}
+        with receiver:
+            for msg in receiver:
+                num = msg.application_properties.get(b'num')
+                assert num not in msgs_received
+                msgs_received[num] = 1
+                receiver.complete_message(msg)
+    
+        assert len(msgs_received) == 20000
+
+    print('start receiving')
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as proc_pool:
+        received = proc_pool.submit(receive)
+        for each in concurrent.futures.as_completed([received]):
+            each.result()
+    assert 0==1
+
 
 if __name__ == '__main__':
     #parser = ArgumentParser()

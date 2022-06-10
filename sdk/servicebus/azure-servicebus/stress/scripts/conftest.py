@@ -15,7 +15,8 @@ load_dotenv(dotenv_path=ENV_FILE, override=True)
 
 # Allow us to pass stress_test_duration from the command line. TODO: may not actually be using this.
 def pytest_addoption(parser):
-    parser.addoption('--stress_test_duration_seconds', action="store", default=None)
+    pass
+    #parser.addoption('--stress_test_duration_seconds', action="store", default=None)
 
 # Note: This is duplicated between here and the basic conftest, so that it does not throw warnings if you're
 # running locally to this SDK. (Everything works properly, pytest just makes a bit of noise.)
