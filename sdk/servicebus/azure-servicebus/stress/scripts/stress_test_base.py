@@ -27,8 +27,9 @@ from process_monitor import ProcessMonitor
 
 LOGFILE_NAME = "stress-test.log"
 PRINT_CONSOLE = True
+LOG_LEVEL = logging.WARN
 
-_logger = logger.get_base_logger(LOGFILE_NAME, "stress_test", logging.WARN)
+_logger = logger.get_base_logger(LOGFILE_NAME, "stress_test", level=LOG_LEVEL, print_console=PRINT_CONSOLE)
 
 
 class ReceiveType:
@@ -56,6 +57,7 @@ class StressTestRunnerState(object):
     def __init__(self):
         self.total_sent = 0
         self.total_received = 0
+        self.last_received = None
         self.cpu_percent = None
         self.memory_bytes = None
         self.timestamp = None
@@ -94,6 +96,11 @@ class StressTestRunner:
         fail_on_exception=True,
         azure_monitor_metric=None,
         process_monitor=None,
+        mgmt_client=None,
+        constant_detach=False,
+        detach_interval=30,
+        queue_name=None,
+        sb_client=None,
     ):
         self.senders = senders
         self.receivers = receivers
@@ -116,6 +123,14 @@ class StressTestRunner:
             "test_stress_queues",
             print_console=PRINT_CONSOLE,
         )
+        self.mgmt_client = mgmt_client
+        self.sb_client = sb_client
+        self.queue_name = queue_name
+        self.constant_detach = constant_detach
+        self.detach_interval = detach_interval
+        self._detach_exception = False
+        self._duplicate_messages = {}
+        self._messages_sent = 0
 
         # Because of pickle we need to create a state object and not just pass around ourselves.
         # If we ever require multiple runs of this one after another, just make Run() reset this.
@@ -171,6 +186,19 @@ class StressTestRunner:
                 self._schedule_interval_logger(end_time, description, interval_seconds)
 
         t = threading.Timer(interval_seconds, _do_interval_logging)
+        t.start()
+
+    def _schedule_update_queue(self, end_time):
+        def _update_queue_properties():
+            if end_time > datetime.utcnow() and not self._should_stop:
+                queue_properties = self.mgmt_client.get_queue(self.queue_name)
+                if queue_properties.max_delivery_count == 10:
+                    queue_properties.max_delivery_count = 11
+                else:
+                    queue_properties.max_delivery_count = 10
+                self.mgmt_client.update_queue(queue_properties)
+                _logger.warn(f"{self.detach_interval} elapsed. {end_time-datetime.utcnow()} left. Updating queue.")
+        t = threading.Timer(self.detach_interval, _update_queue_properties)
         t.start()
 
     def _construct_message(self):
@@ -229,6 +257,8 @@ class StressTestRunner:
 
     def _receive(self, receiver, end_time):
         self._schedule_interval_logger(end_time, "Receiver " + str(self))
+        if self.constant_detach:
+            self._schedule_update_queue(end_time)
         try:
             with receiver:
                 while end_time > datetime.utcnow() and not self._should_stop:
@@ -268,6 +298,8 @@ class StressTestRunner:
                         _logger.exception("Exception during receive: {}".format(e))
                         self._state.exceptions.append(e)
                         self.azure_monitor_metric.record_error(e)
+                        if self.constant_detach:
+                            self._detach_exception = True
                         if self.fail_on_exception:
                             raise
             self._state.timestamp = datetime.utcnow()
@@ -276,6 +308,11 @@ class StressTestRunner:
             self.azure_monitor_metric.record_error(e)
             _logger.exception("Exception in receiver {}".format(e))
             self._should_stop = True
+            self._detach_exception = True
+            if self.sb_client:
+                self.sb_client.close()
+            if self.mgmt_client:
+                self.mgmt_client.close()
             raise
 
     def run(self):
