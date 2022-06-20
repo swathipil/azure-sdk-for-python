@@ -352,7 +352,7 @@ def test_stress_queue_receive_with_constant_link_detach():
     stress_test = CheckDuplicateMessageStressTestRunner(senders = [sb_client.get_queue_sender(SERVICEBUS_QUEUE_NAME)],
                                     receivers = [sb_client.get_queue_receiver(SERVICEBUS_QUEUE_NAME)],
                                     receive_type=ReceiveType.pull,
-                                    duration=timedelta(seconds=10),
+                                    duration=timedelta(seconds=200),
                                     azure_monitor_metric=AzureMonitorMetric("test_stress_queue_receive_with_constant_link_detach"),
                                     mgmt_client=servicebus_mgmt_client,
                                     sb_client=sb_client,
