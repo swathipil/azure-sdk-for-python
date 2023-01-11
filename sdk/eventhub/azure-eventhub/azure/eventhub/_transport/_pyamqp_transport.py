@@ -521,7 +521,7 @@ class PyamqpTransport(AmqpTransport):   # pylint: disable=too-many-public-method
             return errors.AuthenticationException(
                 errors.ErrorCondition.UnauthorizedAccess,
                 description=f"""Management authentication failed. Status code: {status_code}, """
-                    """Description: {description!r}""",
+                    f"""Description: {description!r}""",
             )
         if status_code in [404]:
             return errors.AMQPConnectionError(
