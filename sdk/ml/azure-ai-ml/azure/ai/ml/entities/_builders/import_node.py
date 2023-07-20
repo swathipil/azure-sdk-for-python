@@ -116,9 +116,9 @@ class Import(BaseNode):
         rest_obj = super()._to_rest_object(**kwargs)
         rest_obj.update(
             convert_ordered_dict_to_dict(
-                dict(
-                    componentId=self._get_component_id(),
-                )
+                {
+                    "componentId": self._get_component_id(),
+                }
             )
         )
         return rest_obj
@@ -169,7 +169,7 @@ class Import(BaseNode):
             node = self._component(*args, **kwargs)
             # merge inputs
             for name, original_input in self.inputs.items():
-                if name not in kwargs.keys():
+                if name not in kwargs:
                     # use setattr here to make sure owner of input won't change
                     setattr(node.inputs, name, original_input._data)
                     node._job_inputs[name] = original_input._data

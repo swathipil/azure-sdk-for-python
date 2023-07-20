@@ -3,7 +3,7 @@ from unittest.mock import DEFAULT, Mock, patch
 import pytest
 from pytest_mock import MockFixture
 
-from azure.ai.ml._restclient.v2022_12_01_preview.models import (
+from azure.ai.ml._restclient.v2023_04_01_preview.models import (
     EncryptionKeyVaultUpdateProperties,
     EncryptionUpdateProperties,
 )
@@ -15,7 +15,6 @@ from azure.ai.ml.entities import (
     IdentityConfiguration,
     ManagedIdentityConfiguration,
     Workspace,
-    FeatureStoreSettings,
 )
 from azure.ai.ml.operations._workspace_operations_base import WorkspaceOperationsBase
 from azure.core.polling import LROPoller
@@ -29,13 +28,13 @@ def mock_credential() -> Mock:
 @pytest.fixture
 def mock_workspace_operation_base(
     mock_workspace_scope: OperationScope,
-    mock_aml_services_2022_12_01_preview: Mock,
+    mock_aml_services_2023_04_01_preview: Mock,
     mock_machinelearning_client: Mock,
     mock_credential: Mock,
 ) -> WorkspaceOperationsBase:
     yield WorkspaceOperationsBase(
         operation_scope=mock_workspace_scope,
-        service_client=mock_aml_services_2022_12_01_preview,
+        service_client=mock_aml_services_2023_04_01_preview,
         all_operations=mock_machinelearning_client._operation_container,
         credentials=mock_credential,
     )
@@ -216,7 +215,7 @@ class TestWorkspaceOperation:
             "azure.ai.ml.operations._workspace_operations_base.get_resource_group_location", return_value="random_name"
         )
         mocker.patch(
-            "azure.ai.ml.operations._workspace_operations_base.get_default_log_analytics_arm_id",
+            "azure.ai.ml.operations._workspace_operations_base.get_log_analytics_arm_id",
             return_value=("random_id", True),
         )
         mock_workspace_operation_base._populate_arm_paramaters(workspace=Workspace(name="name"))
@@ -245,20 +244,6 @@ class TestWorkspaceOperation:
         ws.tags = {"k": "v"}
         ws.param = {"tagValues": {"value": {}}}
         mock_workspace_operation_base._populate_arm_paramaters(workspace=ws)
-
-    def test_populate_arm_paramaters_with_feature_store(
-        self, mock_workspace_operation_base: WorkspaceOperationsBase, mocker: MockFixture
-    ) -> None:
-        mocker.patch(
-            "azure.ai.ml.operations._workspace_operations_base.get_resource_group_location", return_value="random_name"
-        )
-        mocker.patch(
-            "azure.ai.ml.operations._workspace_operations_base.get_default_log_analytics_arm_id",
-            return_value=("random_id", True),
-        )
-        mock_workspace_operation_base._populate_arm_paramaters(
-            workspace=Workspace(name="name", kind="FeatureStore", feature_store_settings=FeatureStoreSettings()),
-        )
 
     def test_check_workspace_name(self, mock_workspace_operation_base: WorkspaceOperationsBase):
         mock_workspace_operation_base._default_workspace_name = None

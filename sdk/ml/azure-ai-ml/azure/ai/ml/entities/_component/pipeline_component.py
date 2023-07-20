@@ -13,17 +13,17 @@ from typing import Dict, Optional, Tuple, Union
 
 from marshmallow import Schema
 
-from azure.ai.ml._restclient.v2022_05_01.models import ComponentVersionData, ComponentVersionDetails
+from azure.ai.ml._restclient.v2022_10_01.models import ComponentVersion, ComponentVersionProperties
 from azure.ai.ml._schema import PathAwareSchema
 from azure.ai.ml._schema.pipeline.pipeline_component import PipelineComponentSchema
-from azure.ai.ml._utils.utils import is_data_binding_expression, hash_dict
-from azure.ai.ml.constants._common import COMPONENT_TYPE, ARM_ID_PREFIX, ASSET_ARM_ID_REGEX_FORMAT
+from azure.ai.ml._utils.utils import hash_dict, is_data_binding_expression
+from azure.ai.ml.constants._common import ARM_ID_PREFIX, ASSET_ARM_ID_REGEX_FORMAT, COMPONENT_TYPE
 from azure.ai.ml.constants._component import ComponentSource, NodeType
 from azure.ai.ml.constants._job.pipeline import ValidationErrorCode
 from azure.ai.ml.entities._builders import BaseNode, Command
 from azure.ai.ml.entities._builders.control_flow_node import ControlFlowNode, LoopNode
 from azure.ai.ml.entities._component.component import Component
-from azure.ai.ml.entities._inputs_outputs import GroupInput, Input, Output
+from azure.ai.ml.entities._inputs_outputs import GroupInput, Input
 from azure.ai.ml.entities._job.automl.automl_job import AutoMLJob
 from azure.ai.ml.entities._job.pipeline._attr_dict import (
     has_attr_safe,
@@ -286,14 +286,6 @@ class PipelineComponent(Component):
         """Return a dictionary from component variable name to component object."""
         return self._jobs
 
-    @classmethod
-    def _build_io(cls, io_dict: Union[Dict, Input, Output], is_input: bool):
-        component_io = super()._build_io(io_dict, is_input)
-        if is_input:
-            # Restore flattened parameters to group
-            component_io = GroupInput.restore_flattened_inputs(component_io)
-        return component_io
-
     def _get_anonymous_hash(self) -> str:
         """Get anonymous hash for pipeline component."""
         # ideally we should always use rest object to generate hash as it's the same as
@@ -316,15 +308,6 @@ class PipelineComponent(Component):
             ],
         )
         return hash_value
-
-    def _get_flattened_inputs(self):
-        _result = {}
-        for key, val in self.inputs.items():
-            if isinstance(val, GroupInput):
-                _result.update(val.flatten(group_parameter_name=key))
-                continue
-            _result[key] = val
-        return _result
 
     @classmethod
     def _load_from_rest_pipeline_job(cls, data: Dict):
@@ -399,7 +382,7 @@ class PipelineComponent(Component):
         return telemetry_values
 
     @classmethod
-    def _from_rest_object_to_init_params(cls, obj: ComponentVersionData) -> Dict:
+    def _from_rest_object_to_init_params(cls, obj: ComponentVersion) -> Dict:
         # Pop jobs to avoid it goes with schema load
         jobs = obj.properties.component_spec.pop("jobs", None)
         init_params_dict = super()._from_rest_object_to_init_params(obj)
@@ -440,7 +423,7 @@ class PipelineComponent(Component):
             rest_component_jobs[job_name] = rest_node_dict
         return rest_component_jobs
 
-    def _to_rest_object(self) -> ComponentVersionData:
+    def _to_rest_object(self) -> ComponentVersion:
         """Check ignored keys and return rest object."""
         ignored_keys = self._check_ignored_keys(self)
         if ignored_keys:
@@ -450,14 +433,18 @@ class PipelineComponent(Component):
         component["_source"] = self._source
         component["jobs"] = self._build_rest_component_jobs()
         component["sourceJobId"] = self._source_job_id
-        properties = ComponentVersionDetails(
+        if self._intellectual_property:
+            # hack while full pass through supported is worked on for IPP fields
+            component.pop("intellectual_property")
+            component["intellectualProperty"] = self._intellectual_property._to_rest_object().serialize()
+        properties = ComponentVersionProperties(
             component_spec=component,
             description=self.description,
             is_anonymous=self._is_anonymous,
             properties=self.properties,
             tags=self.tags,
         )
-        result = ComponentVersionData(properties=properties)
+        result = ComponentVersion(properties=properties)
         result.name = self.name
         return result
 

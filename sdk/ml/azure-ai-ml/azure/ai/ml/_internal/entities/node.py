@@ -8,14 +8,13 @@ from typing import Dict, List, Optional, Union
 
 from marshmallow import Schema
 
-from azure.ai.ml import Input, Output
-from azure.ai.ml._schema import PathAwareSchema
-from azure.ai.ml.constants import JobType
-from azure.ai.ml.entities import Component, Job
-from azure.ai.ml.entities._builders import BaseNode
-from azure.ai.ml.entities._job.pipeline._io import NodeInput, NodeOutput, PipelineInput
-from azure.ai.ml.entities._util import convert_ordered_dict_to_dict
-
+from ... import Input, Output
+from ..._schema import PathAwareSchema
+from ...constants import JobType
+from ...entities import Component, Job
+from ...entities._builders import BaseNode
+from ...entities._job.pipeline._io import NodeInput, NodeOutput, PipelineInput
+from ...entities._util import convert_ordered_dict_to_dict
 from .._schema.component import NodeType
 
 
@@ -125,10 +124,10 @@ class InternalBaseNode(BaseNode):
 
         base_dict.update(
             convert_ordered_dict_to_dict(
-                dict(
-                    componentId=self._get_component_id(),
-                    type=self.type,
-                )
+                {
+                    "componentId": self._get_component_id(),
+                    "type": self.type,
+                }
             )
         )
         return base_dict

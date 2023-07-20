@@ -7,7 +7,12 @@ Use the client library for Document Translation to:
 * Check the translation status and progress of each document in the translation operation.
 * Apply a custom translation model or glossaries to tailor translation to your specific case.
 
-[Source code][python-dt-src] | [Package (PyPI)][python-dt-pypi] | [API reference documentation][python-dt-ref-docs] | [Product documentation][python-dt-product-docs] | [Samples][python-dt-samples]
+[Source code][python-dt-src]
+| [Package (PyPI)][python-dt-pypi]
+| [Package (Conda)](https://anaconda.org/microsoft/azure-ai-translation-document/)
+| [API reference documentation][python-dt-ref-docs]
+| [Product documentation][python-dt-product-docs]
+| [Samples][python-dt-samples]
 
 ## _Disclaimer_
 
@@ -85,6 +90,7 @@ To use an [API key][cognitive_authentication_api_key] as the `credential` parame
 pass the key as a string into an instance of [AzureKeyCredential][azure-key-credential].
 
 <!-- SNIPPET:sample_authentication.create_dt_client_with_key -->
+
 ```python
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.translation.document import DocumentTranslationClient
@@ -94,6 +100,7 @@ key = os.environ["AZURE_DOCUMENT_TRANSLATION_KEY"]
 
 document_translation_client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
 ```
+
 <!-- END SNIPPET -->
 
 #### Create the client with an Azure Active Directory credential
@@ -113,6 +120,7 @@ Once completed, set the values of the client ID, tenant ID, and client secret of
 `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_SECRET`.
 
 <!-- SNIPPET:sample_authentication.create_dt_client_with_aad -->
+
 ```python
 """DefaultAzureCredential will use the values from these environment
 variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_CLIENT_SECRET
@@ -125,6 +133,7 @@ credential = DefaultAzureCredential()
 
 document_translation_client = DocumentTranslationClient(endpoint, credential)
 ```
+
 <!-- END SNIPPET -->
 
 ## Key concepts
@@ -166,6 +175,7 @@ poller = document_translation_client.begin_translation("<sas_url_to_source>", "<
 2) Or multiple different sources can be provided each with their own targets.
 
 <!-- SNIPPET:sample_translate_multiple_inputs.multiple_translation -->
+
 ```python
 import os
 from azure.core.credentials import AzureKeyCredential
@@ -231,6 +241,7 @@ for document in result:
     elif document.error:
         print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
 ```
+
 <!-- END SNIPPET -->
 
 > Note: the target_url for each target language must be unique.
@@ -301,6 +312,7 @@ for document in result:
 Begin translating with documents in multiple source containers to multiple target containers in different languages.
 
 <!-- SNIPPET:sample_translate_multiple_inputs.multiple_translation -->
+
 ```python
 import os
 from azure.core.credentials import AzureKeyCredential
@@ -366,6 +378,7 @@ for document in result:
     elif document.error:
         print(f"Error Code: {document.error.code}, Message: {document.error.message}\n")
 ```
+
 <!-- END SNIPPET -->
 
 ### List translation operations
@@ -373,6 +386,7 @@ for document in result:
 Enumerate over the translation operations submitted for the resource.
 
 <!-- SNIPPET:sample_list_translations.list_translations -->
+
 ```python
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.translation.document import DocumentTranslationClient
@@ -397,6 +411,7 @@ for operation in operations:
     print(f"{operation.documents_succeeded_count} succeeded")
     print(f"{operation.documents_canceled_count} canceled\n")
 ```
+
 <!-- END SNIPPET -->
 
 To see how to use the Document Translation client library with Azure Storage Blob to upload documents, create SAS tokens
@@ -516,14 +531,14 @@ This project has adopted the [Microsoft Open Source Code of Conduct][code_of_con
 [python-dt-samples]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/translation/azure-ai-translation-document/samples
 
 [azure_subscription]: https://azure.microsoft.com/free/
-[DT_resource]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/get-started-with-document-translation?tabs=python
+[DT_resource]: https://learn.microsoft.com/azure/ai-services/translator/document-translation/overview
 [single_service]: https://docs.microsoft.com/azure/cognitive-services/cognitive-services-apis-create-account?tabs=singleservice%2Cwindows
 [pip]: https://pypi.org/project/pip/
 [azure_portal_create_DT_resource]: https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesTextTranslation
 [azure_cli_create_DT_resource]: https://docs.microsoft.com/azure/cognitive-services/cognitive-services-apis-create-account-cli?tabs=windows
 [azure-key-credential]: https://aka.ms/azsdk/python/core/azurekeycredential
 [supported_languages]: https://docs.microsoft.com/azure/cognitive-services/translator/language-support#translate
-[source_containers]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/get-started-with-document-translation?tabs=csharp#create-azure-blob-storage-containers
+[source_containers]: https://aka.ms/azsdk/documenttranslation/sas-permissions
 [custom_model]: https://docs.microsoft.com/azure/cognitive-services/translator/custom-translator/quickstart-build-deploy-custom-model
 [glossary]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/overview#supported-glossary-formats
 [sas_token]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/create-sas-tokens?tabs=Containers#create-your-sas-tokens-with-azure-storage-explorer
@@ -534,8 +549,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct][code_of_con
 [azure_core_exceptions]: https://aka.ms/azsdk/python/core/docs#module-azure.core.exceptions
 [python_logging]: https://docs.python.org/3/library/logging.html
 [azure_cli_endpoint_lookup]: https://docs.microsoft.com/cli/azure/cognitiveservices/account?view=azure-cli-latest#az-cognitiveservices-account-show
-[azure_portal_get_endpoint]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/get-started-with-document-translation?tabs=csharp#get-your-custom-domain-name-and-subscription-key
-[cognitive_authentication_api_key]: https://docs.microsoft.com/azure/cognitive-services/translator/document-translation/get-started-with-document-translation?tabs=csharp#get-your-subscription-key
+[azure_portal_get_endpoint]: https://learn.microsoft.com/azure/ai-services/translator/document-translation/quickstarts/document-translation-sdk?tabs=dotnet&pivots=programming-language-python
+[cognitive_authentication_api_key]: https://learn.microsoft.com/azure/ai-services/translator/document-translation/quickstarts/document-translation-sdk?tabs=dotnet&pivots=programming-language-python
 [register_aad_app]: https://docs.microsoft.com/azure/cognitive-services/authentication?tabs=powershell#authenticate-with-azure-active-directory
 [custom_subdomain]: https://docs.microsoft.com/azure/cognitive-services/authentication#create-a-resource-with-a-custom-subdomain
 [azure_identity]: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity

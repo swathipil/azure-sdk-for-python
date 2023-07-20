@@ -75,11 +75,11 @@ class ConditionNode(ControlFlowNode):
         if isinstance(self.condition, InputOutputBase) and self.condition._meta is not None:
             # pylint: disable=protected-access
             output_definition = self.condition._meta
-            if output_definition is not None and not output_definition.is_control:
+            if output_definition is not None and not output_definition._is_control_or_primitive_type:
                 validation_result.append_error(
                     yaml_path="condition",
-                    message=f"'condition' of dsl.condition node must have 'is_control' field "
-                    f"with value 'True', got {output_definition.is_control}",
+                    message=f"'condition' of dsl.condition node must have 'is_control' field or is primitive type "
+                    f"with value 'True', got {output_definition._is_control_or_primitive_type}",
                 )
 
         # check if condition is valid binding
@@ -120,30 +120,5 @@ class ConditionNode(ControlFlowNode):
                         yaml_path=name,
                         message=f"'{name}' of dsl.condition has invalid binding expression: {block}, {error_tail}",
                     )
-
-        def _get_intersection(lst1, lst2):
-            if not lst1:
-                lst1 = []
-            if not lst2:
-                lst2 = []
-            return list(set(lst1) & set(lst2))
-
-        intersection = _get_intersection(self.true_block, self.false_block)
-
-        if not self.true_block and not self.false_block:
-            validation_result.append_error(
-                yaml_path="true_block",
-                message="'true_block' and 'false_block' of dsl.condition node cannot both be empty.",
-            )
-        elif self.true_block is self.false_block:
-            validation_result.append_error(
-                yaml_path="true_block",
-                message="'true_block' and 'false_block' of dsl.condition node cannot be the same object.",
-            )
-        elif intersection:
-            validation_result.append_error(
-                yaml_path="true_block",
-                message="'true_block' and 'false_block' of dsl.condition has intersection.",
-            )
 
         return validation_result.try_raise(self._get_validation_error_target(), raise_error=raise_error)

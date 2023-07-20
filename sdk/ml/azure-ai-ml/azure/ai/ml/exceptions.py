@@ -86,8 +86,8 @@ class ErrorTarget:
     SCHEDULE = "Schedule"
     REGISTRY = "Registry"
     UNKNOWN = "Unknown"
-    FEATURESET = "Featureset"
-    FEATURESTORE_ENTITY = "FeaturestoreEntity"
+    FEATURE_SET = "FeatureSet"
+    FEATURE_STORE_ENTITY = "FeatureStoreEntity"
 
 
 class MlException(AzureError):
@@ -817,5 +817,17 @@ class VSCodeCommandNotFound(MlException):
             ),
             target=ErrorTarget.LOCAL_ENDPOINT,
             no_personal_data_message="Could not start VSCode instance.",
+            error_category=error_category,
+        )
+
+
+class LocalDeploymentGPUNotAvailable(MlException):
+    """Exception raised when local_enable_gpu is set and Nvidia GPU is not available."""
+
+    def __init__(self, error_category=ErrorCategory.USER_ERROR, msg=None):
+        super().__init__(
+            message=msg,
+            target=ErrorTarget.LOCAL_ENDPOINT,
+            no_personal_data_message=msg,
             error_category=error_category,
         )
