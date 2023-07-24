@@ -1,5 +1,5 @@
 psutil
-azure-eventhub
+azure-eventhub @ git+https://github.com/Azure/azure-sdk-for-python@main#subdirectory=sdk/eventhub/azure-eventhub&egg=azure-eventhub
 azure-eventhub-checkpointstoreblob
 azure-eventhub-checkpointstoreblob-aio
 azure-servicebus

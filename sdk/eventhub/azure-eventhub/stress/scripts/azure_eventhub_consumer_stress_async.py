@@ -22,6 +22,7 @@ from azure.eventhub import TransportType
 from logger import get_logger
 from process_monitor import ProcessMonitor
 from app_insights_metric import AzureMonitorMetric
+from stress_checkpointstore_async import AsyncStressTestCheckpointStore
 
 ENV_FILE = os.environ.get('ENV_FILE')
 load_dotenv(dotenv_path=ENV_FILE, override=True)
@@ -41,6 +42,15 @@ def parse_starting_position(args):
 
     return starting_position
 
+def restricted_float(x):
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
+
+    if x < 0.0 or x > 1.0:
+        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+    return x
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--link_credit", default=int(os.environ.get("LINK_CREDIT", 3000)), type=int)
@@ -83,8 +93,21 @@ parser.add_argument("--proxy_password", type=str)
 parser.add_argument("--aad_client_id", help="AAD client id")
 parser.add_argument("--aad_secret", help="AAD secret")
 parser.add_argument("--aad_tenant_id", help="AAD tenant id")
-parser.add_argument("--storage_conn_str", help="conn str of storage blob to store ownership and checkpoint data")
-parser.add_argument("--storage_container_name", help="storage container name to store ownership and checkpoint data")
+parser.add_argument("--storage_conn_str",
+                    help="conn str of storage blob to store ownership and checkpoint data",
+                    const=os.environ.get('AZURE_STORAGE_CONN_STR'),
+                    nargs='?'
+        )
+parser.add_argument("--checkpointstore_latency", help="number of secs in latency of checkpointstore requests", type=int)
+parser.add_argument("--checkpointstore_request_patch", help="type of random errors injected as responses from checkpointstore requests" \
+                    " at 'checkpointstore_patch_frequency'. One of 'request_timeout', 'response_timeout' and 'response_error'.", type=str)
+parser.add_argument("--checkpointstore_patch_frequency", help="frequency of responses injected for checkpointstore requests b/w 0-1", type=restricted_float)
+parser.add_argument("--storage_container_name",
+                    help="storage container name to store ownership and checkpoint data",
+                    type=str,
+                    const=os.environ.get("AZURE_STORAGE_CONTAINER_NAME"),
+                    nargs='?'
+                    )
 parser.add_argument("--pyamqp_logging_enable", help="pyamqp logging enable", action="store_true")
 parser.add_argument("--print_console", help="print to console", action="store_true")
 parser.add_argument("--log_filename", help="log file name", type=str)
@@ -143,6 +166,11 @@ async def on_event_received(process_monitor, partition_context, event):
 async def on_event_batch_received(process_monitor, partition_context, event_batch):
     recv_cnt_map[partition_context.partition_id] += len(event_batch)
     recv_cnt_iteration_map[partition_context.partition_id] += len(event_batch)
+
+    #
+    # REWIND IN TIME BUG:
+    # Question: what is the customer's criteria for when they call update_checkpoint?
+    #
     if recv_cnt_iteration_map[partition_context.partition_id] > LOG_PER_COUNT:
         total_time_elapsed = time.perf_counter() - start_time
 
@@ -162,6 +190,7 @@ async def on_event_batch_received(process_monitor, partition_context, event_batc
             process_monitor.cpu_usage_percent,
             process_monitor.memory_usage_percent
         )
+
         await partition_context.update_checkpoint()
 
 
@@ -171,8 +200,24 @@ async def on_error(partition_context, exception):
 
 def create_client(args):
 
-    if args.storage_conn_str:
-        checkpoint_store = BlobCheckpointStore.from_connection_string(args.storage_conn_str, args.storage_container_name)
+    if args.storage_conn_str and args.storage_container_name:
+        patch_args = {}
+        if args.checkpointstore_latency:
+            patch_args['request_latency'] = args.checkpointstore_latency
+        if args.checkpointstore_request_patch:
+            patch_args['request_patch'] = args.checkpointstore_request_patch
+        if args.checkpointstore_patch_frequency:
+            patch_args['patch_frequency'] = args.checkpointstore_patch_frequency
+        if patch_args:
+            checkpoint_store = AsyncStressTestCheckpointStore.from_connection_string(
+                args.storage_conn_str,
+                args.storage_container_name,
+                **patch_args
+            )
+        else:
+            checkpoint_store = BlobCheckpointStore.from_connection_string(
+                args.storage_conn_str, args.storage_container_name,
+            )
     else:
         checkpoint_store = None
 

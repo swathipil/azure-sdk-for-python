@@ -31,6 +31,10 @@ def get_logger(log_filename, logger_name, level=logging.ERROR, print_console=Fal
     stress_logger.setLevel(level)
     eventhub_logger = logging.getLogger("azure.eventhub")
     eventhub_logger.setLevel(level)
+    eventhub_checkpointstoreaio_logger = logging.getLogger("azure.eventhub.extensions.checkpointstoreblobaio")
+    eventhub_checkpointstoreaio_logger.setLevel(level)
+    eventhub_checkpointstore_storage_logger = logging.getLogger("azure.eventhub.extensions.checkpointstoreblobaio._vendor.storage")
+    eventhub_checkpointstore_storage_logger.setLevel(level)
     uamqp_logger = logging.getLogger("uamqp")
     uamqp_logger.setLevel(level)
 
@@ -38,6 +42,8 @@ def get_logger(log_filename, logger_name, level=logging.ERROR, print_console=Fal
     console_handler = logging.FileHandler(log_filename)
     console_handler.setFormatter(formatter)
     eventhub_logger.addHandler(console_handler)
+    eventhub_checkpointstoreaio_logger.addHandler(console_handler)
+    eventhub_checkpointstore_storage_logger.addHandler(console_handler)
     uamqp_logger.addHandler(console_handler)
     stress_logger.addHandler(console_handler)
 
