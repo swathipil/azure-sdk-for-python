@@ -26,7 +26,7 @@ matrix:
     #  testTarget: sync-batch-web
     #async-batch-web:
     #  testTarget: async-batch-web
-    #checkpointstore-debug-async:
-    #  testTarget: checkpointstore-debug-async
+    checkpointstore-debug-async:
+      testTarget: checkpointstore-debug-async
     ckpt-eh-disable-async:
       testTarget: ckpt-eh-disable-async

@@ -66,12 +66,12 @@ spec:
       #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python azure_eventhub_producer_stress.py -m stress_send_list_async --duration 259200 --log_filename $DEBUG_SHARE/output  --pyamqp_logging_enable & python azure_eventhub_consumer_stress_async.py --duration 259200 --checkpointstore_latency 20 --checkpointstore_patch_frequency 0.2 --checkpointstore_request_patch "response_error" --log_filename $DEBUG_SHARE/output --pyamqp_logging_enable --debug_level "Debug" ']
       #{{- end -}}
 
-      #{{ if eq .Stress.testTarget "checkpointstore-debug-async" }}
-      #command: ['bash', '-c', './incorrect_checkpoint_test_async.sh']
-      #{{- end -}}
+      {{ if eq .Stress.testTarget "checkpointstore-debug-async" }}
+      command: ['bash', '-c', './incorrect_checkpoint_test_async.sh']
+      {{- end -}}
 
       {{ if eq .Stress.testTarget "ckpt-eh-disable-async" }}
-      command: ['bash', '-c', './incorrect_checkpoint_test_async.sh']
+      command: ['bash', '-c', './checkpoint_eh_disable_test_async.sh']
       {{- end -}}
 
       {{- include "stress-test-addons.container-env" . | nindent 6 }}
