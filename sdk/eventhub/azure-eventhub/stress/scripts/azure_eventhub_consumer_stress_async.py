@@ -13,11 +13,11 @@ from collections import defaultdict
 from functools import partial
 from dotenv import load_dotenv
 
-from azure.identity.aio import ClientSecretCredential, DefaultAzureCredential
+from azure.identity.aio import ClientSecretCredential, DefaultAzureCredential, EnvironmentCredential
 from azure.eventhub.aio import EventHubConsumerClient
-from azure.eventhub import EventHubSharedKeyCredential
+from azure.eventhub import EventHubSharedKeyCredential, TransportType
 from azure.eventhub.extensions.checkpointstoreblobaio import BlobCheckpointStore
-from azure.eventhub import TransportType
+from azure.mgmt.eventhub.aio import EventHubManagementClient
 
 from logger import get_logger
 from process_monitor import ProcessMonitor
@@ -76,6 +76,8 @@ parser.add_argument("--conn_str", help="EventHub connection string",
 parser.add_argument("--azure_identity", help="Use identity", type=bool, default=False)
 parser.add_argument("--hostname", help="The fully qualified host name for the Event Hubs namespace.", default=os.environ.get("EVENT_HUB_HOSTNAME"))
 parser.add_argument("--eventhub", help="Name of EventHub", default=os.environ.get('EVENT_HUB_NAME'))
+parser.add_argument("--eh_random_disable", help="Whether to randomly disable eventhub for 30 secs every 0-30 minutes.", type=bool, nargs='?', const=False)
+parser.add_argument("--eh_disable_total_time", help="Amount of time in secs to keep entity disabled", type=int, default=60)
 parser.add_argument("--address", help="Address URI to the EventHub entity")
 parser.add_argument("--sas_policy", help="Name of the shared access policy to authenticate with")
 parser.add_argument("--sas_key", help="Shared access key")
@@ -128,6 +130,7 @@ start_time = time.perf_counter()
 recv_cnt_map = defaultdict(int)
 recv_cnt_iteration_map = defaultdict(int)
 recv_time_map = dict()
+last_received_offset = ['0']
 
 azure_metric_monitor = AzureMonitorMetric("Async EventHubConsumerClient")
 
@@ -160,6 +163,9 @@ async def on_event_received(process_monitor, partition_context, event):
             process_monitor.cpu_usage_percent,
             process_monitor.memory_usage_percent
         )
+        if event.offset <= last_received_offset[0]:
+            LOGGER.error(f"Received offset {event.offset} is less than last received offset {last_received_offset[0]}")
+        last_received_offset[0] = event.offset
         await partition_context.update_checkpoint(event)
 
 
@@ -190,13 +196,67 @@ async def on_event_batch_received(process_monitor, partition_context, event_batc
             process_monitor.cpu_usage_percent,
             process_monitor.memory_usage_percent
         )
-
+        if last_received_offset[0] <= partition_context._last_received_event.offset:
+            LOGGER.error(f"Received offset {partition_context._last_received_event.offset} is less than last received offset {last_received_offset[0]}")
+        last_received_offset[0] = partition_context._last_received_event.offset
         await partition_context.update_checkpoint()
 
 
 async def on_error(partition_context, exception):
     azure_metric_monitor.record_error(exception, extra="partition: {}".format(partition_context.partition_id))
 
+async def update_entity(mgmt_client, interval):    # forces service link detach
+    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+    mgmt_client = EventHubManagementClient(EnvironmentCredential(), subscription_id)
+    live_eventhub = {
+        "resource_group" : 'swathip-test',
+        "namespace": 'swathip-test-eventhubs',
+        "event_hub": "eventhub-test"
+    }
+    start_time = time.time()
+    while True:
+        # get current EH properties/status
+        eventhub = await mgmt_client.event_hubs.get(
+            live_eventhub["resource_group"],
+            live_eventhub["namespace"],
+            live_eventhub["event_hub"]
+        )
+        properties = {
+        'id': eventhub.id,
+        'name': eventhub.name,
+        'type': eventhub.type,
+        'location': eventhub.location,
+        'partition_ids': eventhub.partition_ids,
+        'created_at': eventhub.created_at,
+        'updated_at': datetime.datetime.now(datetime.timezone.utc),
+        'message_retention_in_days': eventhub.message_retention_in_days,
+        'partition_count': eventhub.partition_count,
+        'status': eventhub.status
+        }
+        # turn off "no tzinfo" warning log
+        #properties = eventhub.as_dict()
+        #properties["updated_at"] = datetime.now(timezone.utc)
+        #properties["created_at"] = datetime.fromisoformat(properties['created_at'])
+
+        if properties["status"] == "Active":
+            properties["status"] = "Disabled"
+        else:
+            properties["status"] = "Active"
+
+        # if interval has passed, update status
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        if elapsed_time >= interval:
+            LOGGER.info(
+                f"Updating Event Hub to {properties['status']}")
+            await asyncio.shield(mgmt_client.event_hubs.create_or_update(
+                live_eventhub["resource_group"],
+                live_eventhub["namespace"],
+                live_eventhub["event_hub"],
+                properties
+            ))
+            start_time = current_time
+        await asyncio.sleep(1)
 
 def create_client(args):
 
@@ -334,6 +394,11 @@ async def run(args):
                     **kwargs_dict
                 )
             )]
+
+        if args.eh_random_disable:
+            subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+            mgmt_client = EventHubManagementClient(EnvironmentCredential(), subscription_id)
+            tasks.append(asyncio.ensure_future(update_entity(mgmt_client, args.eh_disable_total_time)))
 
         await asyncio.sleep(args.duration)
         await asyncio.gather(*[clients[i].close() for i in range(args.parallel_recv_cnt)])
