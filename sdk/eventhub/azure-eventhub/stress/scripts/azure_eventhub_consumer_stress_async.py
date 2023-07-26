@@ -203,22 +203,26 @@ async def on_event_batch_received(process_monitor, partition_context, event_batc
 async def on_error(partition_context, exception):
     azure_metric_monitor.record_error(exception, extra="partition: {}".format(partition_context.partition_id))
 
-async def update_entity(mgmt_client, interval):    # forces service link detach
-    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
-    mgmt_client = EventHubManagementClient(EnvironmentCredential(), subscription_id)
+async def update_entity(mgmt_client: EventHubManagementClient, interval):    # forces service link detach
+    LOGGER.info('in update entity')
     live_eventhub = {
-        "resource_group" : 'swathip-test',
-        "namespace": 'swathip-test-eventhubs',
-        "event_hub": "eventhub-test"
+        "resource_group" : os.environ['EVENT_HUB_RESOURCE_GROUP'],
+        "namespace": os.environ['EVENT_HUB_NAMESPACE'],
+        "event_hub": os.environ['EVENT_HUB_NAME']
     }
+    LOGGER.info(f"live eventhub: {live_eventhub}")
     start_time = time.time()
     while True:
         # get current EH properties/status
+        LOGGER.info('calling get eventhub on mgmt client')
+        LOGGER.info(mgmt_client.event_hubs)
         eventhub = await mgmt_client.event_hubs.get(
             live_eventhub["resource_group"],
             live_eventhub["namespace"],
             live_eventhub["event_hub"]
         )
+        LOGGER.info('got eventhub')
+        LOGGER.info(eventhub.as_dict())
         properties = {
         'id': eventhub.id,
         'name': eventhub.name,
@@ -235,7 +239,8 @@ async def update_entity(mgmt_client, interval):    # forces service link detach
         #properties = eventhub.as_dict()
         #properties["updated_at"] = datetime.now(timezone.utc)
         #properties["created_at"] = datetime.fromisoformat(properties['created_at'])
-
+        LOGGER.info('got properties')
+        LOGGER.info(eventhub.as_dict())
         if properties["status"] == "Active":
             properties["status"] = "Disabled"
         else:
@@ -245,14 +250,14 @@ async def update_entity(mgmt_client, interval):    # forces service link detach
         current_time = time.time()
         elapsed_time = current_time - start_time
         if elapsed_time >= interval:
-            LOGGER.info(
-                f"Updating Event Hub to {properties['status']}")
             await asyncio.shield(mgmt_client.event_hubs.create_or_update(
                 live_eventhub["resource_group"],
                 live_eventhub["namespace"],
                 live_eventhub["event_hub"],
                 properties
             ))
+            LOGGER.info(
+                f"Updated Event Hub to {properties['status']}")
             start_time = current_time
         await asyncio.sleep(1)
 
@@ -350,6 +355,7 @@ def create_client(args):
 
 
 async def run(args):
+    with ProcessMonitor("monitor_{}".format(args.log_filename), "consumer_stress_async", print_console=args.print_console) as process_monitor:
         kwargs_dict = {
             "prefetch": args.link_credit,
             "partition_id": str(args.recv_partition_id) if args.recv_partition_id else None,
@@ -366,9 +372,15 @@ async def run(args):
         on_event_received_with_process_monitor = partial(on_event_received, process_monitor)
         on_event_batch_received_with_process_monitor = partial(on_event_batch_received, process_monitor)
 
+        tasks = []
+        if args.eh_random_disable:
+            subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+            mgmt_client = EventHubManagementClient(EnvironmentCredential(), subscription_id)
+            tasks.append(asyncio.ensure_future(update_entity(mgmt_client, args.eh_disable_total_time)))
+
         if args.parallel_recv_cnt and args.parallel_recv_cnt > 1:
             clients = [create_client(args) for _ in range(args.parallel_recv_cnt)]
-            tasks = [
+            tasks.extend([
                 asyncio.ensure_future(
                     clients[i].receive_batch(
                         on_event_batch_received_with_process_monitor,
@@ -378,10 +390,10 @@ async def run(args):
                         **kwargs_dict
                     )
                 ) for i in range(args.parallel_recv_cnt)
-            ]
+            ])
         else:
             clients = [create_client(args)]
-            tasks = [asyncio.ensure_future(
+            tasks.extend([asyncio.ensure_future(
                 clients[0].receive_batch(
                     on_event_batch_received_with_process_monitor,
                     **kwargs_dict
@@ -389,12 +401,7 @@ async def run(args):
                     on_event_received_with_process_monitor,
                     **kwargs_dict
                 )
-            )]
-
-        if args.eh_random_disable:
-            subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
-            mgmt_client = EventHubManagementClient(EnvironmentCredential(), subscription_id)
-            tasks.append(asyncio.ensure_future(update_entity(mgmt_client, args.eh_disable_total_time)))
+            )])
 
         await asyncio.sleep(args.duration)
         await asyncio.gather(*[clients[i].close() for i in range(args.parallel_recv_cnt)])
