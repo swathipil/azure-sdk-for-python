@@ -79,8 +79,6 @@ parser.add_argument("--eventhub", help="Name of EventHub", default=os.environ.ge
 parser.add_argument("--eh_random_disable", help="Whether to randomly disable eventhub for 30 secs every 0-30 minutes.", type=bool, nargs='?', const=False)
 parser.add_argument("--eh_disable_total_time", help="Amount of time in secs to keep entity disabled", type=int, default=60)
 parser.add_argument("--address", help="Address URI to the EventHub entity")
-parser.add_argument("--sas_policy", help="Name of the shared access policy to authenticate with")
-parser.add_argument("--sas_key", help="Shared access key")
 parser.add_argument(
     "--transport_type",
     help="Transport type, 0 means AMQP, 1 means AMQP over WebSocket",
@@ -196,7 +194,7 @@ async def on_event_batch_received(process_monitor, partition_context, event_batc
             process_monitor.cpu_usage_percent,
             process_monitor.memory_usage_percent
         )
-        if last_received_offset[0] <= partition_context._last_received_event.offset:
+        if partition_context._last_received_event.offset <= last_received_offset[0]:
             LOGGER.error(f"Received offset {partition_context._last_received_event.offset} is less than last received offset {last_received_offset[0]}")
         last_received_offset[0] = partition_context._last_received_event.offset
         await partition_context.update_checkpoint()
@@ -352,8 +350,6 @@ def create_client(args):
 
 
 async def run(args):
-
-    with ProcessMonitor("monitor_{}".format(args.log_filename), "consumer_stress_async", print_console=args.print_console) as process_monitor:
         kwargs_dict = {
             "prefetch": args.link_credit,
             "partition_id": str(args.recv_partition_id) if args.recv_partition_id else None,
