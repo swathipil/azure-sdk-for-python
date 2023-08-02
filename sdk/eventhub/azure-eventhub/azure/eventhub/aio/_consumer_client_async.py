@@ -137,6 +137,10 @@ class EventHubConsumerClient(
     :keyword uamqp_transport: Whether to use the `uamqp` library as the underlying transport. The default value is
      False and the Pure Python AMQP library will be used as the underlying transport.
     :paramtype uamqp_transport: bool
+    :keyword encoders: Encoders that integrate with the Schema Registry service and provide the ability to decode
+     content according to the ~azure.eventhub.SchemaEncoder protocol. Schema group used by the encoders must be in
+     the same namespace as the Event Hub.
+    :paramtype encoders: List[~azure.eventhub.SchemaEncoder]
 
     .. admonition:: Example:
 
@@ -318,6 +322,10 @@ class EventHubConsumerClient(
         :keyword uamqp_transport: Whether to use the `uamqp` library as the underlying transport. The default value is
          False and the Pure Python AMQP library will be used as the underlying transport.
         :paramtype uamqp_transport: bool
+        :keyword encoders: Encoders that integrate with the Schema Registry service and provide the ability to decode
+         content according to the ~azure.eventhub.aio.SchemaEncoder protocol. Schema group used by the encoders must be in
+         the same namespace as the Event Hub.
+        :paramtype encoders: List[~azure.eventhub.aio.SchemaEncoder]
         :rtype: ~azure.eventhub.aio.EventHubConsumerClient
 
         .. admonition:: Example:

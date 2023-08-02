@@ -18,6 +18,7 @@ from ._connection_string_parser import (
     parse_connection_string,
     EventHubConnectionStringProperties,
 )
+from ._schema_encoder_protocol import SchemaEncoder
 
 __all__ = [
     "EventData",
@@ -32,4 +33,5 @@ __all__ = [
     "PartitionContext",
     "parse_connection_string",
     "EventHubConnectionStringProperties",
+    "SchemaEncoder"
 ]
