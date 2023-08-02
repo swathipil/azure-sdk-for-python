@@ -36,6 +36,7 @@ from .._utils import (  # pylint: disable=import-error
     jsonschema_validate,
 )
 from ._async_lru import alru_cache  # pylint: disable=import-error
+from .._constants import JSON_MIME_TYPE
 from .._message_protocol import (
     MessageContent,
 )  # pylint: disable=import-error
@@ -79,6 +80,13 @@ class JsonSchemaEncoder(object):
 
     async def __aexit__(self, *exc_details: Any) -> None:
         await self._schema_registry_client.__aexit__(*exc_details)
+
+    @property
+    def mime_type(self) -> str:
+        """
+         Returns the JSON MIME type.
+        """
+        return JSON_MIME_TYPE
 
     async def close(self) -> None:
         """This method is to close the sockets opened by the client.

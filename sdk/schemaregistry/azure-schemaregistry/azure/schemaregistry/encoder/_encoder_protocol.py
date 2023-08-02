@@ -26,9 +26,9 @@ class SchemaEncoder(Protocol):
         """
 
     @property
-    def format(self) -> str:
+    def mime_type(self) -> str:
         """
-         Returns the string schema format type, such as "json".
+         Returns the MIME type associated string schema format type, such as "appliation/json; serialization=Avro".
         """
 
     @overload
