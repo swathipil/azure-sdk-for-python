@@ -8,7 +8,7 @@ from typing_extensions import Protocol, TypedDict  # type: ignore
 
 
 class SchemaContentValidate(Protocol):
-    def __call__(self, schema: str, content: Mapping[str, Any]) -> None:
+    def __call__(self, schema: Mapping[str, Any], content: Mapping[str, Any]) -> None:
         """
         Validates content against provided schema. If invalid, raises Exception.
          Else, returns None.

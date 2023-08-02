@@ -14,6 +14,8 @@ from typing import (
     Mapping
 )
 import json
+from functools import lru_cache
+
 try:
     import jsonschema
 except ImportError:
@@ -32,15 +34,19 @@ from ._constants import (  # pylint: disable=import-error
 
 MessageType = TypeVar("MessageType", bound=MessageTypeProtocol)
 
-def jsonschema_validate(schema: str, content: Mapping[str, Any]) -> None:
+def jsonschema_validate(schema: Mapping[str, Any], content: Mapping[str, Any]) -> None:
     """
     Validates content against provided schema using `jsonschema.Draft4Validator`.
      If invalid, raises Exception. Else, returns None.
      If jsonschema is not installed, raises ValueError.
-     :param str schema: The schema to validate against.
+     :param mapping[str, any] schema: The schema to validate against.
      :param mapping[str, any] content: The content to validate.
     """
-    jsonschema.Draft4Validator(json.loads(schema)).validate(content)
+    jsonschema.Draft4Validator(schema).validate(content)
+
+@lru_cache(maxsize=128)
+def load_schema(schema_definition: str) -> Mapping[str, Any]:
+    return json.loads(schema_definition)
 
 def create_message_content(
     validate: Callable,
@@ -54,7 +60,8 @@ def create_message_content(
 
     try:
         # validate content
-        validate(schema_definition, content)
+        schema = load_schema(schema_definition)
+        validate(schema, content)
     except NameError as exc:
         raise ValueError(
             "To use default validation, please install `jsonschema` " \
@@ -150,7 +157,8 @@ def decode_content(
         ) from exc
 
     try:
-        validate(schema_definition, content)
+        schema = load_schema(schema_definition)
+        validate(schema, content)
     except NameError:
         raise ValueError(
             "To use default validation, please install `jsonschema` " \
