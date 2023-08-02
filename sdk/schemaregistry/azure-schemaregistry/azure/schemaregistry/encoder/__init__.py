@@ -25,7 +25,7 @@
 # --------------------------------------------------------------------------
 from ._schema_registry_json_encoder import JsonSchemaEncoder  # pylint: disable=import-error
 from ._message_protocol import MessageType, MessageContent, SchemaContentValidate  # pylint: disable=import-error
-from ._exceptions import InvalidContentError, InvalidSchemaError # pylint: disable=import-error
+from ._exceptions import InvalidContentError    # pylint: disable=import-error
 from ._encoder_protocol import SchemaEncoder  # pylint: disable=import-error
 from ._utils import jsonschema_validate  # pylint: disable=import-error
 
@@ -37,6 +37,5 @@ __all__ = [
     "MessageType",
     "MessageContent",
     "InvalidContentError",
-    "InvalidSchemaError",
     "jsonschema_validate"
 ]
