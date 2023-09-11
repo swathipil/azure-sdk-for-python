@@ -46,6 +46,7 @@ from .constants import (
     OUTGOING_WINDOW,
     DEFAULT_AUTH_TIMEOUT,
     MESSAGE_DELIVERY_DONE_STATES,
+    DEFAULT_LINK_CREDIT
 )
 
 from .management_operation import ManagementOperation
@@ -566,7 +567,7 @@ class SendClient(AMQPClient):
         # Sender and Link settings
         self._max_message_size = kwargs.pop("max_message_size", MAX_FRAME_SIZE_BYTES)
         self._link_properties = kwargs.pop("link_properties", None)
-        self._link_credit = kwargs.pop("link_credit", None)
+        self._link_credit = kwargs.pop("link_credit", DEFAULT_LINK_CREDIT)
         super(SendClient, self).__init__(hostname, **kwargs)
 
     def _client_ready(self):
@@ -840,6 +841,9 @@ class ReceiveClient(AMQPClient): # pylint:disable=too-many-instance-attributes
             return False
         if self._link.get_state().value != 3:  # ATTACHED
             return False
+        # once the receiver client is ready/connection established, we set prefetch
+        if not self._link_credit:   # if prefetch = 0, set link_credit to 1 to keep receiving
+            self._link.link_credit = self._link_credit + 1
         return True
 
     def _client_run(self, **kwargs):
@@ -881,7 +885,8 @@ class ReceiveClient(AMQPClient): # pylint:disable=too-many-instance-attributes
         self, max_batch_size=None, on_message_received=None, timeout=0
     ):
         self._message_received_callback = on_message_received
-        max_batch_size = max_batch_size or self._link_credit
+        # if max_batch_size is None and prefetch = 0, receive at least 1
+        max_batch_size = max_batch_size or self._link_credit or 1
         timeout = time.time() + timeout if timeout else 0
         receiving = True
         batch = []
