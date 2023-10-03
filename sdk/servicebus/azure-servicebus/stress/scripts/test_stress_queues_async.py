@@ -91,14 +91,17 @@ async def test_stress_queue_receive_and_delete(args):
     sb_client = ServiceBusClient.from_connection_string(
         SERVICE_BUS_CONNECTION_STR, logging_enable=LOGGING_ENABLE, transport_type=TRANSPORT_TYPE, uamqp_transport=UAMQP_TRANSPORT)
     stress_test =  StressTestRunnerAsync(senders = [sb_client.get_queue_sender(SERVICEBUS_QUEUE_NAME)],
-                                    receivers = [sb_client.get_queue_receiver(SERVICEBUS_QUEUE_NAME, receive_mode=ServiceBusReceiveMode.RECEIVE_AND_DELETE, max_wait_time=10)],
+                                    receivers = [sb_client.get_queue_receiver(
+                                        SERVICEBUS_QUEUE_NAME,
+                                        receive_mode=ServiceBusReceiveMode.RECEIVE_AND_DELETE,
+                                        prefetch_count=args.prefetch_count,
+                                        max_wait_time=10)],
                                     admin_client = sb_admin_client,
                                     should_complete_messages = False,
                                     duration=args.duration,
                                     azure_monitor_metric=AzureMonitorMetric("test_stress_queue_slow_send_and_receive"),
                                     logging_level=LOGGING_LEVEL,
                                     send_batch_size=args.prefetch_count, # send prefetch amount to balance recv
-                                    prefetch_count=args.prefetch_count,
                                     receive_type=ReceiveType.pull if args.receive_type == "pull" else ReceiveType.push
                                     )
 
