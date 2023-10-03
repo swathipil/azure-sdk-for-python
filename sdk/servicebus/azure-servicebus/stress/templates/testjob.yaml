@@ -15,61 +15,114 @@ spec:
           memory: "2000Mi"
           cpu: "1"
 
-      {{ if eq .Stress.testTarget "aqueuew" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive --duration 300000 --logging-enable --transport']
+      #{{ if eq .Stress.testTarget "aqueuew" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "aqueuew" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "queuew" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "aqueuepullw" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output &&  python3 test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "queuepullw" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      # Receive and Delete w/ iterator without prefetch
+      {{ if eq .Stress.testTarget "arecvdelnoprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method receive_delete --duration 300000 --logging-enable --transport']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "queuew" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive --duration 300000 --logging-enable --transport']
+      {{ if eq .Stress.testTarget "recvdelnoprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method receive_delete --duration 300000 --logging-enable --transport']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "aqueuepullw" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output &&  python3 test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable --transport']
+      # Receive and Delete w/ iterator with prefetch of 3
+      {{ if eq .Stress.testTarget "arecvdelprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method receive_delete --duration 300000 --logging-enable --transport --prefetch_count=3']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "queuepullw" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable --transport']
+      {{ if eq .Stress.testTarget "recvdelprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method receive_delete --duration 300000 --logging-enable --transport --prefetch_count=3']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "abatchw" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive_batch --duration 300000 --logging-enable --transport']
-      {{- end -}}
-
-      {{ if eq .Stress.testTarget "batchw" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive_batch --duration 300000 --logging-enable --transport']
-      {{- end -}}
-
+      # Peek Lock w/ iterator without prefetch
       {{ if eq .Stress.testTarget "aqueue" }}
       command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive --duration 300000 --logging-enable']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "queue" }}
+      # Peek Lock w/ iterator with prefetch 5
+      {{ if eq .Stress.testTarget "queueprefetch" }}
       command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive --duration 300000 --logging-enable']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "aqueuepull" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable']
+
+      # Receive and Delete w/ pull with prefetch of 3
+      {{ if eq .Stress.testTarget "apullrecvdelprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method receive_delete --duration 300000 --logging-enable --transport --prefetch_count=3 --receive_type pull']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "queuepull" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output &&  python3 test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable']
+      # Receive and Delete w/ pull with no prefetch
+      {{ if eq .Stress.testTarget "pullrecvdelnoprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method receive_delete --duration 300000 --logging-enable --transport  --receive_type pull']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "abatch" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive_batch --duration 300000 --logging-enable']
+      # Peek Lock w/ pull with prefetch of 5
+      {{ if eq .Stress.testTarget "pullprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive_batch --duration 300000 --logging-enable --transport --receive_type pull']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "batch" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE  && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive_batch --duration 300000 --logging-enable  ']
+      # Peek Lock w/ pull with no prefetch
+      {{ if eq .Stress.testTarget "apullnoprefetch" }}
+      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable --transport']
       {{- end -}}
 
-      {{ if eq .Stress.testTarget "amemray" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && memray run --output $DEBUG_SHARE/sb_async_memray_output.bin test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable']
-      {{- end -}}
+      #{{ if eq .Stress.testTarget "abatchw" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive_batch --duration 300000 --logging-enable --transport']
+      #{{- end -}}
 
-      {{ if eq .Stress.testTarget "memray" }}
-      command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && memray run --output $DEBUG_SHARE/sb_memray_output.bin test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable']
-      {{- end -}}
+      #{{ if eq .Stress.testTarget "batchw" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive_batch --duration 300000 --logging-enable --transport']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "aqueue" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "queue" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "aqueuepull" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "queuepull" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output &&  python3 test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "abatch" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && cat > $DEBUG_SHARE/output && python3 test_stress_queues_async.py --method send_receive_batch --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "batch" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE  && cat > $DEBUG_SHARE/output && python3 test_stress_queues.py --method send_receive_batch --duration 300000 --logging-enable  ']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "amemray" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && memray run --output $DEBUG_SHARE/sb_async_memray_output.bin test_stress_queues_async.py --method send_pull_receive --duration 300000 --logging-enable']
+      #{{- end -}}
+
+      #{{ if eq .Stress.testTarget "memray" }}
+      #command: ['bash', '-c', 'mkdir -p $DEBUG_SHARE && memray run --output $DEBUG_SHARE/sb_memray_output.bin test_stress_queues.py --method send_pull_receive --duration 300000 --logging-enable']
+      #{{- end -}}
 
       {{- include "stress-test-addons.container-env" . | nindent 6 }}
 {{- end -}}

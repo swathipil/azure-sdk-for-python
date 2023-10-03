@@ -62,6 +62,7 @@ async def test_stress_queue_batch_send_and_receive(args):
                                     admin_client = sb_admin_client,
                                     duration=args.duration,
                                     send_batch_size=5,
+                                    receive_type=ReceiveType.pull if args.receive_type == "pull" else ReceiveType.push,
                                     azure_monitor_metric=AzureMonitorMetric("test_stress_queue_batch_send_and_receive"),
                                     logging_level=LOGGING_LEVEL
                                     )
@@ -95,7 +96,10 @@ async def test_stress_queue_receive_and_delete(args):
                                     should_complete_messages = False,
                                     duration=args.duration,
                                     azure_monitor_metric=AzureMonitorMetric("test_stress_queue_slow_send_and_receive"),
-                                    logging_level=LOGGING_LEVEL
+                                    logging_level=LOGGING_LEVEL,
+                                    send_batch_size=args.prefetch_count, # send prefetch amount to balance recv
+                                    prefetch_count=args.prefetch_count,
+                                    receive_type=ReceiveType.pull if args.receive_type == "pull" else ReceiveType.push
                                     )
 
     result = await stress_test.run_async()
@@ -374,12 +378,13 @@ if __name__ == '__main__':
     parser.add_argument("--send-batch-size", type=int, default=100)
     parser.add_argument("--message-size", type=int, default=100)
 
-    parser.add_argument("--receive-type", type=str, default="pull")
+    parser.add_argument("--receive_type", type=str, default="push")
     parser.add_argument("--max_wait_time", type=int, default=10)
     parser.add_argument("--max_message_count", type=int, default=1)
     parser.add_argument("--uamqp_mode", action="store_true")
     parser.add_argument("--transport", action="store_true")
     parser.add_argument("--debug_level", help="Flag for setting a debug level, can be Info, Debug, Warning, Error or Critical", type=str, default="Error")
+    parser.add_argument("--prefetch_count", help="Flag for setting count", type=int, default=0)
     args, _ = parser.parse_known_args()
 
     if args.transport:

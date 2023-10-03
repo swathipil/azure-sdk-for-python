@@ -1,7 +1,7 @@
 aiohttp>=3.0
 opencensus-ext-azure
 psutil
-azure-servicebus
 python-dotenv
 websocket-client
 memray
+git+https://github.com/swathipil/azure-sdk-for-python.git@swathipil/sb/peek-msms-recvdelete-bug#subdirectory=sdk/servicebus/azure-servicebus&egg=azure-servicebus
