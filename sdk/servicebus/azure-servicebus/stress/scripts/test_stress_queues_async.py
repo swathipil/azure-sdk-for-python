@@ -101,7 +101,7 @@ async def test_stress_queue_receive_and_delete(args):
                                     duration=args.duration,
                                     azure_monitor_metric=AzureMonitorMetric("test_stress_queue_slow_send_and_receive"),
                                     logging_level=LOGGING_LEVEL,
-                                    send_batch_size=args.prefetch_count, # send prefetch amount to balance recv
+                                    send_batch_size=args.prefetch_count if args.prefetch_count != 0 else None, # send prefetch amount to balance recv
                                     receive_type=ReceiveType.pull if args.receive_type == "pull" else ReceiveType.push
                                     )
 

@@ -97,9 +97,9 @@ def test_stress_queue_receive_and_delete(args):
                                     admin_client = sb_admin_client,
                                     should_complete_messages = False,
                                     duration=args.duration,
-                                    azure_monitor_metric=AzureMonitorMetric("test_stress_queue_slow_send_and_receive"),
+                                    azure_monitor_metric=AzureMonitorMetric("test_stress_queue_receive_and_delete"),
                                     logging_level=LOGGING_LEVEL,
-                                    send_batch_size=args.prefetch_count, # send prefetch amount to balance recv
+                                    send_batch_size=args.prefetch_count if args.prefetch_count != 0 else None, # send prefetch amount to balance recv
                                     receive_type=ReceiveType.pull if args.receive_type == "pull" else ReceiveType.push
                                     )
 

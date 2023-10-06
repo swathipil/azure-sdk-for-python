@@ -215,7 +215,7 @@ class StressTestRunner:
                         )
                         if self.send_batch_size:
                             self._state.total_sent += self.send_batch_size
-                        else:
+                        elif self.send_batch_size is None:
                             self._state.total_sent += 1 # send single message
                         self.on_send(self._state, message, sender)
           
@@ -404,7 +404,7 @@ class StressTestRunnerAsync(StressTestRunner):
                         )
                         if self.send_batch_size:
                             self._state.total_sent += self.send_batch_size
-                        else:
+                        elif self.send_batch_size is None:
                             self._state.total_sent += 1
                         self.on_send(self._state, message, sender)
                     except Exception as e:
