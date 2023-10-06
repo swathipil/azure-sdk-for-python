@@ -8,17 +8,9 @@ matrix:
         testTarget: recvdelnoprefetch
       arecvdelprefetch:
         testTarget: arecvdelprefetch
-      recvdelprefetch:
-        testTarget: recvdelprefetch
-      aqueue:
-        testTarget: aqueue
-      queueprefetch:
-        testTarget: queueprefetch
       apullrecvdelprefetch:
         testTarget: apullrecvdelprefetch
       pullrecvdelnoprefetch:
         testTarget: pullrecvdelnoprefetch
-      pullprefetch:
-        testTarget: pullprefetch
       apullnoprefetch:
         testTarget: apullnoprefetch
