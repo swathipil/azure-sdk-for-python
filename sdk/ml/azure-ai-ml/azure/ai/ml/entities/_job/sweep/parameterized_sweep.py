@@ -1,7 +1,7 @@
 # ---------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # ---------------------------------------------------------
-from typing import Dict, Optional, Type, Union
+from typing import Dict, List, Optional, Type, Union
 
 from azure.ai.ml.exceptions import ErrorCategory, ErrorTarget, ValidationErrorType, ValidationException
 
@@ -14,6 +14,7 @@ from .early_termination_policy import (
     MedianStoppingPolicy,
     TruncationSelectionPolicy,
 )
+from ..job_resource_configuration import JobResourceConfiguration
 from .objective import Objective
 from .sampling_algorithm import (
     BayesianSamplingAlgorithm,
@@ -72,6 +73,7 @@ class ParameterizedSweep:
             ]
         ] = None,
         queue_settings: Optional[QueueSettings] = None,
+        resources: Optional[Union[dict, JobResourceConfiguration]] = None,
     ) -> None:
         """
         :param limits: Limits for sweep job.
@@ -89,17 +91,29 @@ class ParameterizedSweep:
         ~azure.ai.ml.sweep.Randint, ~azure.ai.ml.sweep.Uniform]]
         :param queue_settings: Queue settings for sweep job.
         :type queue_settings: ~azure.ai.ml.entities.QueueSettings
+        :param resources: Compute Resource configuration for the job.
+        :type resources: ~azure.ai.ml.entities.ResourceConfiguration
         """
         self.sampling_algorithm = sampling_algorithm
         self.early_termination = early_termination
         self._limits = limits
         self.search_space = search_space
         self.queue_settings = queue_settings
+        self.resources = resources
 
         if isinstance(objective, Dict):
             self.objective = Objective(**objective)
         else:
             self.objective = objective
+
+    @property
+    def resources(self) -> JobResourceConfiguration:
+        """Resources for sweep job.
+
+        :returns: Resources for sweep job.
+        :rtype: ~azure.ai.ml.entities.ResourceConfiguration
+        """
+        return self._resources
 
     @property
     def limits(self) -> SweepJobLimits:
@@ -109,6 +123,17 @@ class ParameterizedSweep:
         :rtype: ~azure.ai.ml.sweep.SweepJobLimits
         """
         return self._limits
+
+    @resources.setter
+    def resources(self, value: Union[dict, JobResourceConfiguration]) -> None:
+        """Set Resources for sweep job.
+
+        :param value: Compute Resource configuration for the job.
+        :type value: ~azure.ai.ml.entities.ResourceConfiguration
+        """
+        if isinstance(value, dict):
+            value = JobResourceConfiguration(**value)
+        self._resources = value
 
     @limits.setter
     def limits(self, value: SweepJobLimits) -> None:
@@ -128,6 +153,34 @@ class ParameterizedSweep:
             )
         self._limits = value
 
+    def set_resources(
+        self,
+        *,
+        instance_type: Optional[Union[str, List[str]]] = None,
+        instance_count: Optional[int] = None,
+        locations: Optional[List[str]] = None,
+        properties: Optional[Dict] = None,
+        docker_args: Optional[str] = None,
+        shm_size: Optional[str] = None,
+        **kwargs,  # pylint: disable=unused-argument
+    ):
+        """Set resources for Sweep."""
+        if self.resources is None:
+            self.resources = JobResourceConfiguration()
+
+        if locations is not None:
+            self.resources.locations = locations
+        if instance_type is not None:
+            self.resources.instance_type = instance_type
+        if instance_count is not None:
+            self.resources.instance_count = instance_count
+        if properties is not None:
+            self.resources.properties = properties
+        if docker_args is not None:
+            self.resources.docker_args = docker_args
+        if shm_size is not None:
+            self.resources.shm_size = shm_size
+
     def set_limits(
         self,
         *,
@@ -138,14 +191,14 @@ class ParameterizedSweep:
     ) -> None:
         """Set limits for Sweep node. Leave parameters as None if you don't want to update corresponding values.
 
-        :param max_concurrent_trials: maximum concurrent trial number.
-        :type max_concurrent_trials: int
-        :param max_total_trials: maximum total trial number.
-        :type max_total_trials: int
-        :param timeout: total timeout in seconds for sweep node
-        :type timeout: int
-        :param trial_timeout: timeout in seconds for each trial
-        :type trial_timeout: int
+        :keyword max_concurrent_trials: maximum concurrent trial number.
+        :paramtype max_concurrent_trials: int
+        :keyword max_total_trials: maximum total trial number.
+        :paramtype max_total_trials: int
+        :keyword timeout: total timeout in seconds for sweep node
+        :paramtype timeout: int
+        :keyword trial_timeout: timeout in seconds for each trial
+        :paramtype trial_timeout: int
         """
         if self._limits is None:
             self._limits = SweepJobLimits(
@@ -167,11 +220,11 @@ class ParameterizedSweep:
     def set_objective(self, *, goal: Optional[str] = None, primary_metric: Optional[str] = None) -> None:
         """Set the sweep object.. Leave parameters as None if you don't want to update corresponding values.
 
-        :param goal: Defines supported metric goals for hyperparameter tuning. Acceptable values are:
+        :keyword goal: Defines supported metric goals for hyperparameter tuning. Acceptable values are:
         "minimize", "maximize".
         :type goal: str
-        :param primary_metric: Name of the metric to optimize.
-        :type primary_metric: str
+        :keyword primary_metric: Name of the metric to optimize.
+        :paramtype primary_metric: str
         """
 
         if self.objective is not None:

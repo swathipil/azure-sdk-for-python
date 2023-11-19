@@ -50,7 +50,7 @@ from azure.core.polling.base_polling import LROBasePolling, OperationResourcePol
 from azure.core.pipeline.policies._utils import _FixedOffset
 from utils import request_and_responses_product, REQUESTS_TRANSPORT_RESPONSES, create_transport_response, HTTP_REQUESTS
 from azure.core.pipeline._tools import is_rest
-from rest_client import TestRestClient
+from rest_client import MockRestClient
 
 
 class SimpleResource:
@@ -303,6 +303,57 @@ def test_post_resource_location(pipeline_client_builder, deserialization_cb, htt
     poll = LROPoller(client, initial_response, deserialization_cb, LROBasePolling(0))
     result = poll.result()
     assert result["location_result"] == True
+
+
+@pytest.mark.parametrize("http_request,http_response", request_and_responses_product(REQUESTS_TRANSPORT_RESPONSES))
+def test_post_direct_success(pipeline_client_builder, deserialization_cb, http_request, http_response):
+
+    # ResourceLocation
+
+    # The initial response contains both Location and Operation-Location, a 202 and a success body
+    initial_response = TestBasePolling.mock_send(
+        http_request,
+        http_response,
+        "POST",
+        202,
+        {
+            "operation-location": "http://example.org/async_monitor",
+        },
+        {"status": "succeeded"},
+    )
+
+    def send(request, **kwargs):
+        pytest.fail("No requests allowed")
+
+    client = pipeline_client_builder(send)
+
+    poll = LROPoller(client, initial_response, deserialization_cb, LROBasePolling(0))
+    result = poll.result()
+    assert result["status"] == "succeeded"
+
+
+@pytest.mark.parametrize("http_request,http_response", request_and_responses_product(REQUESTS_TRANSPORT_RESPONSES))
+def test_post_fail(pipeline_client_builder, deserialization_cb, http_request, http_response):
+
+    # ResourceLocation
+
+    # The initial response contains both Location and Operation-Location, a 202 and a success body
+    initial_response = TestBasePolling.mock_send(
+        http_request,
+        http_response,
+        "POST",
+        500,
+        {"status": "failed"},
+    )
+
+    def send(request, **kwargs):
+        pytest.fail("No requests allowed")
+
+    client = pipeline_client_builder(send)
+
+    with pytest.raises(HttpResponseError):
+        poll = LROPoller(client, initial_response, deserialization_cb, LROBasePolling(0))
+        result = poll.result()
 
 
 class TestBasePolling(object):
@@ -749,7 +800,7 @@ class TestBasePolling(object):
 
 @pytest.mark.parametrize("http_request", HTTP_REQUESTS)
 def test_final_get_via_location(port, http_request, deserialization_cb):
-    client = TestRestClient(port)
+    client = MockRestClient(port)
     request = http_request(
         "PUT",
         "http://localhost:{}/polling/polling-with-options".format(port),

@@ -19,10 +19,8 @@ from azure.core.pipeline.policies import (
     CustomHookPolicy,
     NetworkTraceLoggingPolicy,
 )
-from azure.core.pipeline.transport import (
-    AsyncHttpTransport,
-    HttpRequest,
-)
+from azure.core.rest import HttpRequest
+from azure.core.pipeline.transport import AsyncHttpTransport
 
 from ._authentication_async import _configure_credential
 from .._generated.aio import AzureTable
@@ -47,12 +45,12 @@ class AsyncTablesBaseClient(AccountHostsMixin):
     :ivar str api_version: The service API version.
     """
 
-    def __init__( # pylint: disable=missing-client-constructor-parameter-credential
+    def __init__(  # pylint: disable=missing-client-constructor-parameter-credential
         self,
         endpoint: str,
         *,
         credential: Optional[Union[AzureSasCredential, AzureNamedKeyCredential, AsyncTokenCredential]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Create TablesBaseClient from a Credential.
 
@@ -67,15 +65,11 @@ class AsyncTablesBaseClient(AccountHostsMixin):
             ~azure.core.credentials_async.AsyncTokenCredential or None
         :keyword api_version: Specifies the version of the operation to use for this request. Default value
             is "2019-02-02".
-        :paramtype api_version: str
+        :paramtype api_version: str or None
         """
         super(AsyncTablesBaseClient, self).__init__(endpoint, credential=credential, **kwargs)  # type: ignore
-        self._client = AzureTable(
-            self.url,
-            policies=kwargs.pop('policies', self._policies),
-            **kwargs
-        )
-        self._client._config.version = get_api_version(kwargs, self._client._config.version) # type: ignore # pylint: disable=protected-access
+        self._client = AzureTable(self.url, policies=kwargs.pop("policies", self._policies), **kwargs)
+        self._client._config.version = get_api_version(kwargs, self._client._config.version)  # type: ignore # pylint: disable=protected-access
 
     async def __aenter__(self):
         await self._client.__aenter__()
@@ -115,25 +109,24 @@ class AsyncTablesBaseClient(AccountHostsMixin):
         :param table_name: The table name.
         :type table_name: str
         :param reqs: The HTTP request.
-        :type reqs: ~azure.core.pipeline.transport.HttpRequest
+        :type reqs: ~azure.core.pipeline.rest.HttpRequest
         :return: A list of batch part metadata in response.
         :rtype: list[Mapping[str, Any]]
         """
         # Pop it here, so requests doesn't feel bad about additional kwarg
         policies = [StorageHeadersPolicy()]
 
-        changeset = HttpRequest("POST", None)  # type: ignore
-        changeset.set_multipart_mixed(
-            *reqs, policies=policies, boundary=f"changeset_{uuid4()}"
-        )
-        request = self._client._client.post(  # pylint: disable=protected-access
+        changeset = HttpRequest("POST", "")
+        changeset.set_multipart_mixed(*reqs, policies=policies, boundary=f"changeset_{uuid4()}")
+        request = HttpRequest(
+            method="POST",
             url=f"{self.scheme}://{self._primary_hostname}/$batch",
             headers={
                 "x-ms-version": self.api_version,
                 "DataServiceVersion": "3.0",
                 "MaxDataServiceVersion": "3.0;NetFx",
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
             },
         )
         request.set_multipart_mixed(
@@ -143,30 +136,30 @@ class AsyncTablesBaseClient(AccountHostsMixin):
             boundary=f"batch_{uuid4()}",
         )
 
-        pipeline_response = await self._client._client._pipeline.run(request, **kwargs)  # pylint: disable=protected-access
-        response = pipeline_response.http_response
+        response = await self._client.send_request(request, stream=True, **kwargs)
+        await response.read()
         # TODO: Check for proper error model deserialization
         if response.status_code == 413:
             raise _decode_error(
-                response,
-                error_message="The transaction request was too large",
-                error_type=RequestTooLargeError)
+                response, error_message="The transaction request was too large", error_type=RequestTooLargeError
+            )
         if response.status_code != 202:
             decoded = _decode_error(response)
             _validate_tablename_error(decoded, table_name)
             raise decoded
 
-        parts_iter = response.parts()
+        # The parts() method is defined on the back-compat mixin, not the protocol.
+        parts_iter = response.parts()  # type: ignore[attr-defined]
         parts = []
         async for p in parts_iter:
+            await p.read()
             parts.append(p)
         error_parts = [p for p in parts if not 200 <= p.status_code < 300]
         if any(error_parts):
             if error_parts[0].status_code == 413:
                 raise _decode_error(
-                    response,
-                    error_message="The transaction request was too large",
-                    error_type=RequestTooLargeError)
+                    response, error_message="The transaction request was too large", error_type=RequestTooLargeError
+                )
             decoded = _decode_error(
                 response=error_parts[0],
                 error_type=TableTransactionError,
@@ -184,6 +177,7 @@ class AsyncTransportWrapper(AsyncHttpTransport):
     :param async_transport: The async Http Transport instance.
     :type async_transport: ~azure.core.pipeline.transport.AsyncHttpTransport
     """
+
     def __init__(self, async_transport):
         self._transport = async_transport
 
