@@ -38,3 +38,4 @@ python azure_eventhub_consumer_stress_async.py \
     --debug_level "Debug" &
 
 python azure_eventhub_producer_stress.py -m stress_send_list_async --duration 259200 --log_filename $DEBUG_SHARE/output_producer.log  --pyamqp_logging_enable --debug_level "Info"
+
