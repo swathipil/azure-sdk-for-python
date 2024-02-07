@@ -1,5 +1,5 @@
 psutil
-azure-eventhub
+../../
 azure-eventhub-checkpointstoreblob
 azure-eventhub-checkpointstoreblob-aio
 azure-servicebus
