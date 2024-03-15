@@ -620,16 +620,22 @@ class SendClient(AMQPClient):
 
     @staticmethod
     def _process_send_error(message_delivery, condition, description=None, info=None):
+        print(condition)
         try:
+            print('in try')
             amqp_condition = ErrorCondition(condition)
         except ValueError:
+            print('in Value Error')
             error = MessageException(condition, description=description, info=info)
         else:
+            print('in MessageSendFailed')
             error = MessageSendFailed(
                 amqp_condition, description=description, info=info
             )
+        print('after else in process error')
         message_delivery.state = MessageDeliveryState.Error
         message_delivery.error = error
+        print(message_delivery)
 
     def _on_send_complete(self, message_delivery, reason, state):
         message_delivery.reason = reason

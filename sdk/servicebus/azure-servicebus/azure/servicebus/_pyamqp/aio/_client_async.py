@@ -577,6 +577,7 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
         else:
             print('in on send complete else')
             # NotDelivered and other unknown errors
+            message_delivery.state = MessageDeliveryState.Error
             self._process_send_error(
                 message_delivery,
                 condition=ErrorCondition.UnknownError
@@ -601,6 +602,8 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
         await self._transfer_message_async(message_delivery, timeout)
 
         running = True
+        print(message_delivery.state)
+
         while running and message_delivery.state not in MESSAGE_DELIVERY_DONE_STATES:
             running = await self.do_work_async()
         if message_delivery.state not in MESSAGE_DELIVERY_DONE_STATES:
@@ -615,9 +618,13 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
             MessageDeliveryState.Cancelled,
             MessageDeliveryState.Timeout
         ):
+            print('in message delivery done state')
+            print(message_delivery.state)
+            print(message_delivery.error)
             try:
                 raise message_delivery.error  # pylint: disable=raising-bad-type
             except TypeError:
+                print('in type error message exception')
                 # This is a default handler
                 raise MessageException(condition=ErrorCondition.UnknownError, description="Send failed.") from None
 

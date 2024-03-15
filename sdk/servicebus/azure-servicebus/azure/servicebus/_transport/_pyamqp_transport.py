@@ -981,6 +981,7 @@ class PyamqpTransport(AmqpTransport):   # pylint: disable=too-many-public-method
                 error_cls = ServiceBusAuthenticationError
         elif isinstance(exception, MessageException):
             logger.info("AMQP Message error occurred: (%r).", exception)
+            error_cls = ServiceBusConnectionError
             #if isinstance(exception, MessageAlreadySettled):
             #    error_cls = MessageAlreadySettled
             #elif isinstance(exception, MessageContentTooLarge):
