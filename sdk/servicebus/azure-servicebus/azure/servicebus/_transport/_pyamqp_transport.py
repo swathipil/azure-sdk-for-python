@@ -514,7 +514,11 @@ class PyamqpTransport(AmqpTransport):   # pylint: disable=too-many-public-method
         except TimeoutError as exc:
             raise OperationTimeoutError(message="Send operation timed out") from exc
         except MessageException as e:
+            print('raising MessageException')
             raise PyamqpTransport.create_servicebus_exception(logger, e)
+        except Exception as e:
+            print(e)
+            raise e
 
     @staticmethod
     def add_batch(
@@ -975,12 +979,12 @@ class PyamqpTransport(AmqpTransport):   # pylint: disable=too-many-public-method
                 error_cls = ServiceBusConnectionError
             else:
                 error_cls = ServiceBusAuthenticationError
-        # elif isinstance(exception, MessageException):
-        #     logger.info("AMQP Message error occurred: (%r).", exception)
-        #     if isinstance(exception, MessageAlreadySettled):
-        #         error_cls = MessageAlreadySettled
-        #     elif isinstance(exception, MessageContentTooLarge):
-        #         error_cls = MessageSizeExceededError
+        elif isinstance(exception, MessageException):
+            logger.info("AMQP Message error occurred: (%r).", exception)
+            #if isinstance(exception, MessageAlreadySettled):
+            #    error_cls = MessageAlreadySettled
+            #elif isinstance(exception, MessageContentTooLarge):
+            #    error_cls = MessageSizeExceededError
         elif condition == ErrorCondition.NotFound:
             # handle NotFound error code
             error_cls = (

@@ -535,6 +535,7 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
     async def _transfer_message_async(self, message_delivery, timeout=0):
         message_delivery.state = MessageDeliveryState.WaitingForSendAck
         on_send_complete = partial(self._on_send_complete_async, message_delivery)
+        print('before send_transfer in transfer message')
         delivery = await self._link.send_transfer(
             message_delivery.message,
             on_send_complete=on_send_complete,
@@ -546,10 +547,13 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
     async def _on_send_complete_async(self, message_delivery, reason, state):
         message_delivery.reason = reason
         if reason == LinkDeliverySettleReason.DISPOSITION_RECEIVED:
+            print('in on send complete disp recv')
             if state and SEND_DISPOSITION_ACCEPT in state:
+                print('in on send complete disp recv 552')
                 message_delivery.state = MessageDeliveryState.Ok
             else:
                 try:
+                    print('in on send complete disp recv 555')
                     error_info = state[SEND_DISPOSITION_REJECT]
                     self._process_send_error(
                         message_delivery,
@@ -558,16 +562,20 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
                         info=error_info[0][2]
                     )
                 except TypeError:
+                    print('in on send complete disp recv 564')
                     self._process_send_error(
                         message_delivery,
                         condition=ErrorCondition.UnknownError
                     )
         elif reason == LinkDeliverySettleReason.SETTLED:
+            print('in on send complete disp recv 571')
             message_delivery.state = MessageDeliveryState.Ok
         elif reason == LinkDeliverySettleReason.TIMEOUT:
+            print('in on send complete disp recv 574')
             message_delivery.state = MessageDeliveryState.Timeout
             message_delivery.error = TimeoutError("Sending message timed out.")
         else:
+            print('in on send complete else')
             # NotDelivered and other unknown errors
             self._process_send_error(
                 message_delivery,
@@ -575,9 +583,11 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
             )
 
     async def _send_message_impl_async(self, message, **kwargs):
+        print('in send messages impl')
         timeout = kwargs.pop("timeout", 0)
         expire_time = (time.time() + timeout) if timeout else None
         await self.open_async()
+        print('after open in send messages impl')
         message_delivery = _MessageDelivery(
             message,
             MessageDeliveryState.WaitingToBeSent,
@@ -586,6 +596,7 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
 
         while not await self.client_ready_async():
             await asyncio.sleep(0.05)
+        print('after client ready')
 
         await self._transfer_message_async(message_delivery, timeout)
 
@@ -593,6 +604,7 @@ class SendClientAsync(SendClientSync, AMQPClientAsync):
         while running and message_delivery.state not in MESSAGE_DELIVERY_DONE_STATES:
             running = await self.do_work_async()
         if message_delivery.state not in MESSAGE_DELIVERY_DONE_STATES:
+            print("MessageException created")
             raise MessageException(
                 condition=ErrorCondition.ClientError,
                 description="Send failed - connection not running."

@@ -30,6 +30,7 @@ class PendingDelivery(object):
         self._network_trace_params = kwargs.get('network_trace_params')
 
     async def on_settled(self, reason, state):
+        print('on settled')
         if self.on_delivery_settled and not self.settled:
             try:
                 await self.on_delivery_settled(reason, state)

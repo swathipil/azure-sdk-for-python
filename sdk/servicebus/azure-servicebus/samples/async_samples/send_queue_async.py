@@ -17,6 +17,16 @@ from azure.servicebus.aio import ServiceBusClient
 CONNECTION_STR = os.environ['SERVICEBUS_CONNECTION_STR']
 QUEUE_NAME = os.environ["SERVICEBUS_QUEUE_NAME"]
 
+import logging
+import sys
+handler = logging.StreamHandler(stream=sys.stdout)
+logger = logging.getLogger('azure.servicebus')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(handler)
+uamqp_logger = logging.getLogger('uamqp')
+uamqp_logger.setLevel(logging.DEBUG)
+uamqp_logger.addHandler(handler)
+
 
 async def send_single_message(sender):
     message = ServiceBusMessage("Single Message")
@@ -41,14 +51,17 @@ async def send_batch_message(sender):
 
 
 async def main():
-    servicebus_client = ServiceBusClient.from_connection_string(conn_str=CONNECTION_STR)
+    servicebus_client = ServiceBusClient.from_connection_string(
+        conn_str=CONNECTION_STR, logging_enable=True, uamqp_transport=False)
 
     async with servicebus_client:
         sender = servicebus_client.get_queue_sender(queue_name=QUEUE_NAME)
         async with sender:
-            await send_single_message(sender)
-            await send_a_list_of_messages(sender)
-            await send_batch_message(sender)
+            while True:
+                await send_single_message(sender)
+                print('sent')
+            #await send_a_list_of_messages(sender)
+            #await send_batch_message(sender)
 
     print("Send message is done.")
 

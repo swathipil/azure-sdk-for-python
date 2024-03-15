@@ -140,6 +140,7 @@ class PyamqpTransportAsync(PyamqpTransport, AmqpTransportAsync):
         # pylint: disable=protected-access
         await sender._open()
         try:
+            print('sending messages')
             if isinstance(message._message, list):
                 await sender._handler.send_message_async(BatchMessage(*message._message), timeout=timeout)
             else:
@@ -151,7 +152,11 @@ class PyamqpTransportAsync(PyamqpTransport, AmqpTransportAsync):
         except TimeoutError as exc:
             raise OperationTimeoutError(message="Send operation timed out") from exc
         except MessageException as e:
+            print('raising MessageException')
             raise PyamqpTransportAsync.create_servicebus_exception(logger, e)
+        except Exception as e:
+            print(e)
+            raise e
 
     @staticmethod
     def create_receive_client_async(
