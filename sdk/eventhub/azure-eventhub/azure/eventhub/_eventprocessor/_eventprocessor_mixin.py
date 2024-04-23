@@ -58,7 +58,7 @@ class EventProcessorMixin:
         event_position: Union[str, int, datetime] = "-1"
 
         checkpoint_sequence_number = checkpoint.get("sequence_number") if checkpoint else None
-        checkpoint_offset = checkpoint_sequence_number.get("offset") if checkpoint else None
+        checkpoint_offset = checkpoint.get("offset") if checkpoint else None
 
         # Prioritize checking sequence number/replication segment, since offset may not 
         # match offset from primary region when data is replicated to a secondary region.
@@ -76,7 +76,6 @@ class EventProcessorMixin:
             event_position = cast(
                 Union[int, str, datetime, ReplicationSegment], self._initial_event_position
             )
-
         return event_position, event_position_inclusive
 
     def create_consumer(
