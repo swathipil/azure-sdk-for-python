@@ -75,6 +75,7 @@ class ReplicationSegment(NamedTuple):
     sequence_number: int
     replication_segment: int
 
+DEFAULT_REPLICATION_SEGMENT = -1
 
 ## all below - previously uamqp
 class TransportType(Enum):

@@ -289,8 +289,10 @@ class BlobCheckpointStore(CheckpointStore):
         metadata = {
             "offset": str(checkpoint["offset"]),
             "sequencenumber": str(checkpoint["sequence_number"]),
-            "replicationsegment": str(checkpoint["replication_segment"]),
         }
+        if "replication_segment" in checkpoint:
+            metadata["replicationsegment"] = str(checkpoint["replication_segment"])
+
         blob_name = "{}/{}/{}/checkpoint/{}".format(
             checkpoint["fully_qualified_namespace"],
             checkpoint["eventhub_name"],
@@ -347,8 +349,9 @@ class BlobCheckpointStore(CheckpointStore):
                 "partition_id": blob.name.split("/")[-1],
                 "offset": str(metadata["offset"]),
                 "sequence_number": int(metadata["sequencenumber"]),
-                "replication_segment": str(metadata["replicationsegment"]),
             }
+            if "replicationsegment" in metadata:
+                checkpoint["replication_segment"] = str(metadata["replicationsegment"])
             result.append(checkpoint)
         return result
 

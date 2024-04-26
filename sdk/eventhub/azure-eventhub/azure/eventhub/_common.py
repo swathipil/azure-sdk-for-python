@@ -317,10 +317,7 @@ class EventData:
 
         :rtype: int or None
         """
-        try:
-            return self._raw_amqp_message.annotations.get(PROP_SEQ_NUMBER_EPOCH, None).split(":")[0]
-        except AttributeError:
-            return -1
+        return self._raw_amqp_message.annotations.get(PROP_SEQ_NUMBER_EPOCH, None)
 
     @property
     def offset(self) -> Optional[str]:
