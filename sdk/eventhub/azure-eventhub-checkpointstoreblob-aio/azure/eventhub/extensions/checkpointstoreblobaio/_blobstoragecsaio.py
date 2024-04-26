@@ -347,7 +347,7 @@ class BlobCheckpointStore(CheckpointStore):
                 "partition_id": blob.name.split("/")[-1],
                 "offset": str(metadata["offset"]),
                 "sequence_number": int(metadata["sequencenumber"]),
-                "replicationsegment": str(metadata["replication_segment"]),
+                "replication_segment": str(metadata["replicationsegment"]),
             }
             result.append(checkpoint)
         return result
