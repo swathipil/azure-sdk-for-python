@@ -39,6 +39,7 @@ def check_expiration_and_refresh_status(expires_on: int, refresh_window: int) ->
     seconds_since_epoc = int(utc_now().timestamp())
     is_expired = seconds_since_epoc >= expires_on
     is_refresh_required = (expires_on - seconds_since_epoc) <= refresh_window
+    _LOGGER.info(f'expires on: {is_expired, expires_on}, refresh_window: {refresh_window}, is refresh required: {is_refresh_required}')
     return is_expired, is_refresh_required
 
 
@@ -113,7 +114,7 @@ class CBSAuthenticator:  # pylint:disable=too-many-instance-attributes, disable=
     def _on_amqp_management_open_complete(self, management_open_result: ManagementOpenResult) -> None:
         if self.state in (CbsState.CLOSED, CbsState.ERROR):
             _LOGGER.debug(
-                "CSB with status: %r encounters unexpected AMQP management open complete.",
+                "CBS with status: %r encounters unexpected AMQP management open complete.",
                 self.state,
                 extra=self._network_trace_params
             )
@@ -166,7 +167,7 @@ class CBSAuthenticator:  # pylint:disable=too-many-instance-attributes, disable=
             )
             self.auth_state = CbsAuthState.ERROR
             return
-        _LOGGER.debug(
+        _LOGGER.info(
             "CBS Put token result (%r), status code: %s, status_description: %s.",
             execute_operation_result,
             status_code,
@@ -208,7 +209,7 @@ class CBSAuthenticator:  # pylint:disable=too-many-instance-attributes, disable=
             elif is_refresh_required:
                 self.auth_state = CbsAuthState.REFRESH_REQUIRED
         elif self.auth_state == CbsAuthState.IN_PROGRESS:
-            _LOGGER.debug(
+            _LOGGER.info(
                 "CBS update in progress. Token put time: %r",
                 self._token_put_time,
                 extra=self._network_trace_params
@@ -256,6 +257,7 @@ class CBSAuthenticator:  # pylint:disable=too-many-instance-attributes, disable=
         self._expires_on = access_token.expires_on
         expires_in = self._expires_on - int(utc_now().timestamp())
         self._refresh_window = int(float(expires_in) * 0.1)
+        _LOGGER.info(f'refresh window update token: {self._refresh_window}, token expires on: {self._expires_on}')
         token_type: Optional[str] = None
 
         if isinstance(access_token.token, bytes):
