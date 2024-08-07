@@ -33,8 +33,8 @@ def get_logger(log_filename, logger_name, level=logging.ERROR, print_console=Fal
     eventhub_logger.setLevel(level)
     uamqp_logger = logging.getLogger("uamqp")
     uamqp_logger.setLevel(level)
-    identity_logger = logging.getLogger("azure.identity")
-    identity_logger.setLevel(level)
+    core_logger = logging.getLogger("azure.core")
+    core_logger.setLevel(level)
 
     formatter = log_format or logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
     console_handler = logging.FileHandler(log_filename)
@@ -42,7 +42,7 @@ def get_logger(log_filename, logger_name, level=logging.ERROR, print_console=Fal
     eventhub_logger.addHandler(console_handler)
     uamqp_logger.addHandler(console_handler)
     stress_logger.addHandler(console_handler)
-    identity_logger.addHandler(console_handler)
+    core_logger.addHandler(console_handler)
 
     return stress_logger
 
