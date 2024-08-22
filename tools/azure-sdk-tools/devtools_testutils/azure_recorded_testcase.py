@@ -260,6 +260,9 @@ def get_credential(**kwargs):
         tenant_id = os.environ.get("AZURESUBSCRIPTION_TENANT_ID")
         system_access_token = os.environ.get("SYSTEM_ACCESSTOKEN")
         if service_connection_id and client_id and tenant_id and system_access_token:
+            _LOGGER.info(
+                "Service connection ID, client ID, secret, and tenant ID detected. Using AzurePipelinesCredential."
+            )
             from azure.identity import AzurePipelinesCredential
             if is_async:
                 from azure.identity.aio import AzurePipelinesCredential
@@ -284,6 +287,9 @@ def get_credential(**kwargs):
         from azure.identity import DefaultAzureCredential
         if is_async:
             from azure.identity.aio import DefaultAzureCredential
+        _LOGGER.info(
+            "Falling back to DefaultAzureCredential."
+        )
         return DefaultAzureCredential(exclude_managed_identity_credential=True, **kwargs)
 
     # For playback tests, return credentials that will accept playback `get_token` calls
