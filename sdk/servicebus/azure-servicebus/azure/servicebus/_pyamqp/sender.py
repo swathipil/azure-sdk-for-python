@@ -7,7 +7,7 @@ import struct
 import uuid
 import logging
 import time
-from threading import Lock
+import queue
 
 from ._encode import encode_payload
 from .link import Link
@@ -49,8 +49,7 @@ class SenderLink(Link):
         if "source_address" not in kwargs:
             kwargs["source_address"] = "sender-link-{}".format(name)
         super(SenderLink, self).__init__(session, handle, name, role, target_address=target_address, **kwargs)
-        self._pending_deliveries = []
-        self.lock = Lock()
+        self._pending_deliveries = queue.Queue()
 
     @classmethod
     def from_incoming_frame(cls, session, handle, frame):
@@ -127,18 +126,20 @@ class SenderLink(Link):
             return
         range_end = (frame[2] or frame[1]) + 1  # first or last
         settled_ids = list(range(frame[1], range_end))
-        unsettled = []
-        for delivery in self._pending_deliveries:
+        unsettled = queue.Queue()
+        while self._pending_deliveries.qsize() > 0:
+            delivery = self._pending_deliveries.get()
             if delivery.sent and delivery.frame["delivery_id"] in settled_ids:
                 delivery.on_settled(LinkDeliverySettleReason.DISPOSITION_RECEIVED, frame[4])  # state
                 continue
-            unsettled.append(delivery)
+            unsettled.put(delivery)
         self._pending_deliveries = unsettled
 
     def _remove_pending_deliveries(self):
-        for delivery in self._pending_deliveries:
+        while self._pending_deliveries.qsize() > 0:
+            delivery = self._pending_deliveries.get()
             delivery.on_settled(LinkDeliverySettleReason.NOT_DELIVERED, None)
-        self._pending_deliveries = []
+        self._pending_deliveries = queue.Queue()
 
     def _on_session_state_change(self):
         if self._session.state == SessionState.DISCARDING:
@@ -146,23 +147,23 @@ class SenderLink(Link):
         super()._on_session_state_change()
 
     def update_pending_deliveries(self):
-        with self.lock:
-            if self.current_link_credit <= 0:
-                self.current_link_credit = self.link_credit
-                self._outgoing_flow()
-            now = time.time()
-            pending = []
+        if self.current_link_credit <= 0:
+            self.current_link_credit = self.link_credit
+            self._outgoing_flow()
+        now = time.time()
+        pending = queue.Queue()
 
-            for delivery in self._pending_deliveries:
-                if delivery.timeout and (now - delivery.start) >= delivery.timeout:
-                    delivery.on_settled(LinkDeliverySettleReason.TIMEOUT, None)
+        while self._pending_deliveries.qsize() > 0:
+            delivery = self._pending_deliveries.get()
+            if delivery.timeout and (now - delivery.start) >= delivery.timeout:
+                delivery.on_settled(LinkDeliverySettleReason.TIMEOUT, None)
+                continue
+            if not delivery.sent:
+                sent_and_settled = self._outgoing_transfer(delivery)
+                if sent_and_settled:
                     continue
-                if not delivery.sent:
-                    sent_and_settled = self._outgoing_transfer(delivery)
-                    if sent_and_settled:
-                        continue
-                pending.append(delivery)
-            self._pending_deliveries = pending
+            pending.put(delivery)
+        self._pending_deliveries = pending
 
     def send_transfer(self, message, *, send_async=False, **kwargs):
         self._check_if_closed()
@@ -182,23 +183,27 @@ class SenderLink(Link):
             network_trace_params = self.network_trace_params
         )
         if self.current_link_credit == 0 or send_async:
-            self._pending_deliveries.append(delivery)
+            self._pending_deliveries.put(delivery)
         else:
             sent_and_settled = self._outgoing_transfer(delivery)
             if not sent_and_settled:
-                self._pending_deliveries.append(delivery)
+                self._pending_deliveries.put(delivery)
         return delivery
 
-    def cancel_transfer(self, delivery):
-        try:
-            index = self._pending_deliveries.index(delivery)
-        except ValueError:
-            raise ValueError("Found no matching pending transfer.") from None
-        delivery = self._pending_deliveries[index]
-        if delivery.sent:
-            raise MessageException(
-                ErrorCondition.ClientError,
-                message="Transfer cannot be cancelled. Message has already been sent and awaiting disposition.",
-            )
-        delivery.on_settled(LinkDeliverySettleReason.CANCELLED, None)
-        self._pending_deliveries.pop(index)
+    # TODO: Not used anywhere currently
+    #def cancel_transfer(self, delivery):
+    #    found = False
+    #    for i in range(self._pending_deliveries.qsize()):
+    #        current_delivery = self._pending_deliveries.queue[i]
+    #        if current_delivery == delivery:
+    #            found = True
+    #            if current_delivery.sent:
+    #                raise MessageException(
+    #                    ErrorCondition.ClientError,
+    #                    message="Transfer cannot be cancelled. Message has already been sent and awaiting disposition.",
+    #                )
+    #            current_delivery.on_settled(LinkDeliverySettleReason.CANCELLED, None)
+    #            del self._pending_deliveries.queue[i]
+    #            break
+    #    if not found:
+    #        raise ValueError("Found no matching pending transfer.")
