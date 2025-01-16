@@ -66,6 +66,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   kind: 'StorageV2'
   properties: {
     accessTier: 'Hot'
+    allowSharedKeyAccess: false
   }
 }
 
