@@ -146,21 +146,52 @@ MESSAGE_STATE_NAME = b"x-opt-message-state"
 
 
 class ServiceBusReceiveMode(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """
+    The mode in which the receiver will operate. The default is
+     `ServiceBusReceiveMode.PEEK_LOCK`. In this mode, the message is
+     locked for a specified duration and must be settled (completed,
+     abandoned, deferred) before the lock expires. In `ServiceBusReceiveMode.RECEIVE_AND_DELETE`
+     mode, the message is removed from the queue immediately upon
+     retrieval and does not need to be settled. This mode is not
+     recommended for most scenarios, as it does not allow for
+     processing failures or retries.
+    """
     PEEK_LOCK = "peeklock"
     RECEIVE_AND_DELETE = "receiveanddelete"
 
 
 class ServiceBusMessageState(int, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """
+    The state of the message in the queue. The default is
+    `ServiceBusMessageState.ACTIVE`. In this state, the message is
+    available for processing. In `ServiceBusMessageState.DEFERRED` state,
+    the message is deferred and will not be available for processing
+    until it is explicitly scheduled. In `ServiceBusMessageState.SCHEDULED`
+    state, the message is scheduled for future processing and will
+    not be available until the scheduled time has passed.
+    """
     ACTIVE = 0
     DEFERRED = 1
     SCHEDULED = 2
 
 
 class ServiceBusSessionFilter(Enum):
+    """
+    The session filter for the session receiver. The default is
+    `ServiceBusSessionFilter.NEXT_AVAILABLE`, which specifies that the
+    receiver will receive the next available session.
+    """
     NEXT_AVAILABLE = 0
 
 
 class ServiceBusSubQueue(str, Enum, metaclass=CaseInsensitiveEnumMeta):
+    """
+    The sub-queue for the message. In order to receive a message from the dead-letter queue or transfer dead-letter queue,
+    set the `sub_queue` parameter to ServiceBusSubQueue.DEAD_LETTER or ServiceBusSubQueue.TRANSFER_DEAD_LETTER when calling
+        /// <see cref="ServiceBusClient.CreateReceiver(string, ServiceBusReceiverOptions)"/> or
+        /// <see cref="ServiceBusClient.CreateReceiver(string, string, ServiceBusReceiverOptions)"/>.
+        /// This operation can only be performed when <see cref="ReceiveMode"/> is set to <see cref="ServiceBusReceiveMode.PeekLock"/>
+    """
     DEAD_LETTER = "deadletter"
     TRANSFER_DEAD_LETTER = "transferdeadletter"
 
