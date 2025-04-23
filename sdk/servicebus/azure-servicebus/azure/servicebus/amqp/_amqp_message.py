@@ -250,6 +250,7 @@ class AmqpAnnotatedMessage(object):
          * For ~azure.servicebus.AmqpMessageBodyType.VALUE, the body could be any type.
 
         :rtype: Any
+        :returns: The body of the Message.
         """
         if self._body_type == AmqpMessageBodyType.DATA:  # pylint:disable=no-else-return
             return (i for i in cast(Iterable, self._data_body))
@@ -264,6 +265,7 @@ class AmqpAnnotatedMessage(object):
         """The body type of the underlying AMQP message.
 
         :rtype: ~azure.servicebus.amqp.AmqpMessageBodyType
+        :returns: The body type of the underlying AMQP message.
         """
         return self._body_type
 
@@ -273,6 +275,7 @@ class AmqpAnnotatedMessage(object):
         Properties to add to the message.
 
         :rtype: Optional[~azure.servicebus.amqp.AmqpMessageProperties]
+        :returns: The message properties.
         """
         return self._properties
 
@@ -286,6 +289,7 @@ class AmqpAnnotatedMessage(object):
         Service specific application properties.
 
         :rtype: Optional[Dict]
+        :returns: Service specific application properties.
         """
         return self._application_properties
 
@@ -299,6 +303,7 @@ class AmqpAnnotatedMessage(object):
         Service specific message annotations.
 
         :rtype: Optional[Dict]
+        :returns: Service specific message annotations.
         """
         return self._annotations
 
@@ -313,6 +318,7 @@ class AmqpAnnotatedMessage(object):
         Delivery annotations convey information from the sending peer to the receiving peer.
 
         :rtype: Dict
+        :returns: Delivery-specific non-standard properties.
         """
         return self._delivery_annotations
 
@@ -326,6 +332,7 @@ class AmqpAnnotatedMessage(object):
         The message header.
 
         :rtype: Optional[~azure.servicebus.amqp.AmqpMessageHeader]
+        :returns: The message header.
         """
         return self._header
 
@@ -339,6 +346,7 @@ class AmqpAnnotatedMessage(object):
         The message footer.
 
         :rtype: Optional[Dict]
+        :returns: The message footer.
         """
         return self._footer
 

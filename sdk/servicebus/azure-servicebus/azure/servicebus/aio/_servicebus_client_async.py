@@ -263,7 +263,8 @@ class ServiceBusClient(object):  # pylint: disable=client-accepts-api-version-ke
         Close down the ServiceBus client.
         All spawned senders, receivers and underlying connection will be shutdown.
 
-        :return: None
+        :returns: None
+        :rtype: None
         """
         for handler in self._handlers:
             try:
@@ -297,7 +298,7 @@ class ServiceBusClient(object):  # pylint: disable=client-accepts-api-version-ke
          wait when sending and receiving data before timing out. The default value is 0.2 for TransportType.Amqp
          and 1 for TransportType.AmqpOverWebsocket. If connection errors are occurring due to write timing out,
          a larger than default value may need to be passed in.
-        :return: A queue sender.
+        :returns: A queue sender.
         :rtype: ~azure.servicebus.aio.ServiceBusSender
 
         .. admonition:: Example:
@@ -485,7 +486,7 @@ class ServiceBusClient(object):  # pylint: disable=client-accepts-api-version-ke
          wait when sending and receiving data before timing out. The default value is 0.2 for TransportType.Amqp
          and 1 for TransportType.AmqpOverWebsocket. If connection errors are occurring due to write timing out,
          a larger than default value may need to be passed in.
-        :return: A topic sender.
+        :returns: A topic sender.
         :rtype: ~azure.servicebus.aio.ServiceBusSender
 
         .. admonition:: Example:

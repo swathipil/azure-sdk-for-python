@@ -292,7 +292,6 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
          Therefore, it's recommended that PEEK_LOCK mode be used with prefetch.
         :returns: The ServiceBusReceiver.
         :rtype: ~azure.servicebus.aio.ServiceBusReceiver
-
         :raises ~azure.servicebus.ServiceBusAuthenticationError: Indicates an issue in token/identity validity.
         :raises ~azure.servicebus.ServiceBusAuthorizationError: Indicates an access/rights related failure.
 
@@ -535,6 +534,7 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
         Get the ServiceBusSession object linked with the receiver. Session is only available to session-enabled
         entities, it would return None if called on a non-sessionful receiver.
 
+        :returns: The ServiceBusSession object linked with the receiver.
         :rtype: ~azure.servicebus.aio.ServiceBusSession
 
         .. admonition:: Example:
@@ -549,6 +549,13 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
         return self._session  # type: ignore
 
     async def close(self) -> None:
+        """Close down the handler connection.
+
+        If the handler has already closed, this operation will do nothing.
+
+        :returns: None
+        :rtype: None
+        """
         await super(ServiceBusReceiver, self).close()
         self._message_iter = None
 
@@ -563,7 +570,7 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
          until the connection is closed. If specified, and no messages arrive for the
          timeout period, the iterator will stop.
         :return: An async iterator of messages.
-        :rtype asynciterator[~azure.servicebus.ServiceBusReceivedMessage]
+        :rtype: asynciterator[~azure.servicebus.ServiceBusReceivedMessage]
 
         .. admonition:: Example:
 
@@ -780,10 +787,11 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
 
         :param message: The received message to be completed.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has already been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -804,10 +812,11 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
 
         :param message: The received message to be abandoned.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -829,10 +838,11 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
 
         :param message: The received message to be deferred.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has already been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -859,10 +869,11 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
         :param Optional[str] reason: The reason for dead-lettering the message.
         :param Optional[str] error_description: The detailed error description for dead-lettering the message.
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -902,9 +913,9 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
          The value must be greater than 0 if specified. The default value is None, meaning no timeout.
         :returns: The utc datetime the lock is set to expire at.
         :rtype: datetime.datetime
-        :raises: TypeError if the message is sessionful.
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.MessageLockLostError if message lock has already expired.
+        :raises TypeError: If the message is sessionful.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been already settled.
+        :raises ~azure.servicebus.exceptions.MessageLockLostError: If message lock has already expired.
 
         .. admonition:: Example:
 
@@ -946,6 +957,7 @@ class ServiceBusReceiver(AsyncIterator, BaseHandler, ReceiverMixin):
         """
         Get the ServiceBusReceiver client identifier associated with the receiver instance.
 
+        :returns: The client identifier associated with the sender instance.
         :rtype: str
         """
         return self._name

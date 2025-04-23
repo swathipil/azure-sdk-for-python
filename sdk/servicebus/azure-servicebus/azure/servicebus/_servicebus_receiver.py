@@ -546,6 +546,7 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
         Get the ServiceBusSession object linked with the receiver. Session is only available to session-enabled
         entities, it would return None if called on a non-sessionful receiver.
 
+        :returns: The ServiceBusSession object linked with the receiver.
         :rtype: ~azure.servicebus.ServiceBusSession
 
         .. admonition:: Example:
@@ -800,10 +801,12 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
 
         :param message: The received message to be completed.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -824,10 +827,12 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
 
         :param message: The received message to be abandoned.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -849,10 +854,12 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
 
         :param message: The received message to be deferred.
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
+
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -882,10 +889,12 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
         :type message: ~azure.servicebus.ServiceBusReceivedMessage
         :param Optional[str] reason: The reason for dead-lettering the message.
         :param Optional[str] error_description: The detailed error description for dead-lettering the message.
+
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.SessionLockLostError if session lock has already expired.
-        :raises: ~azure.servicebus.exceptions.ServiceBusError when errors happen.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.SessionLockLostError: If session lock has already expired.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When errors happen.
 
         .. admonition:: Example:
 
@@ -929,9 +938,9 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
          The value must be greater than 0 if specified. The default value is None, meaning no timeout.
         :returns: The utc datetime the lock is set to expire at.
         :rtype: datetime.datetime
-        :raises: TypeError if the message is sessionful.
-        :raises: ~azure.servicebus.exceptions.MessageAlreadySettled if the message has been settled.
-        :raises: ~azure.servicebus.exceptions.MessageLockLostError if message lock has already expired.
+        :raises TypeError: If the message is sessionful.
+        :raises ~azure.servicebus.exceptions.MessageAlreadySettled: If the message has been settled.
+        :raises ~azure.servicebus.exceptions.MessageLockLostError: If message lock has already expired.
 
         .. admonition:: Example:
 
@@ -973,6 +982,7 @@ class ServiceBusReceiver(BaseHandler, ReceiverMixin): # pylint: disable=too-many
         """
         Get the ServiceBusReceiver client_identifier associated with the receiver instance.
 
+        :returns: The client identifier associated with the receiver instance.
         :rtype: str
         """
         return self._name

@@ -402,14 +402,14 @@ class ServiceBusSender(BaseHandler, SenderMixin):
          ~azure.servicebus.amqp.AmqpAnnotatedMessage]]]
         :keyword Optional[float] timeout: The total operation timeout in seconds including all the retries.
          The value must be greater than 0 if specified. The default value is None, meaning no timeout.
+        :returns: None
         :rtype: None
-        :raises:
-                :class: ~azure.servicebus.exceptions.OperationTimeoutError if sending times out.
-                :class: ~azure.servicebus.exceptions.MessageSizeExceededError if the size of the message is over
-                  service bus frame size limit.
-                :class: ~azure.servicebus.exceptions.ServiceBusError when other errors happen such as connection
-                 error, authentication error, and any unexpected errors.
-                 It's also the top-level root class of above errors.
+        :raises ~azure.servicebus.exceptions.OperationTimeoutError: If sending times out.
+        :raises ~azure.servicebus.exceptions.MessageSizeExceededError: If the size of the message is over
+         service bus frame size limit.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When other errors happen such as connection
+         error, authentication error, and any unexpected errors.
+         It's also the top-level root class of above errors.
 
         .. admonition:: Example:
 
@@ -525,6 +525,7 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         Get the ServiceBusSender client_identifier associated with the sender instance.
 
         :rtype: str
+        :returns: The client identifier.
         """
         return self._name
 

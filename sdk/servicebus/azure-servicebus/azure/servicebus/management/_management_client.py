@@ -434,6 +434,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param queue: The queue that is returned from `get_queue`, `create_queue` or `list_queues` and
          has the updated properties.
         :type queue: ~azure.servicebus.management.QueueProperties
+        :returns: None
         :rtype: None
         """
         # we should not mutate the input, making a copy first for update
@@ -457,6 +458,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
 
         :param str queue_name: The name of the queue or
          a `QueueProperties` with name.
+        :returns: None
         :rtype: None
         """
         _validate_entity_name_type(queue_name)
@@ -653,6 +655,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param topic: The topic that is returned from `get_topic`, `create_topic`, or `list_topics`
          and has the updated properties.
         :type topic: ~azure.servicebus.management.TopicProperties
+        :returns: None
         :rtype: None
         """
         # we should not mutate the input, making a copy first for update
@@ -674,6 +677,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         """Delete a topic.
 
         :param str topic_name: The topic to be deleted.
+        :returns: None
         :rtype: None
         """
         _validate_entity_name_type(topic_name)
@@ -879,6 +883,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param str topic_name: The topic that owns the subscription.
         :param ~azure.servicebus.management.SubscriptionProperties subscription: The subscription that is returned
          from `get_subscription`, `update_subscription` or `list_subscription` and has the updated properties.
+        :returns: None
         :rtype: None
         """
         _validate_entity_name_type(topic_name, display_name="topic_name")
@@ -906,6 +911,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param str topic_name: The topic that owns the subscription.
         :param str subscription_name: The subscription to
          be deleted.
+        :returns: None
         :rtype: None
         """
         _validate_topic_and_subscription_types(topic_name, subscription_name)
@@ -1051,6 +1057,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
          `create_rule`, or `list_rules` and has the updated properties.
         :type rule: ~azure.servicebus.management.RuleProperties
 
+        :returns: None
         :rtype: None
         """
         _validate_topic_and_subscription_types(topic_name, subscription_name)
@@ -1082,6 +1089,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :param str subscription_name: The subscription that
          owns the topic.
         :param str rule_name: The to-be-deleted rule.
+        :returns: None
         :rtype: None
         """
         _validate_topic_subscription_and_rule_types(topic_name, subscription_name, rule_name)
@@ -1133,4 +1141,9 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         )
 
     def close(self) -> None:
+        """
+        Close the management client.
+        :return: None
+        :rtype: None
+        """
         self._impl.close()

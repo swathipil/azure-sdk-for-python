@@ -172,7 +172,6 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         :keyword str user_agent: If specified, this will be added in front of the built-in user agent string.
         :returns: The ServiceBusSender
         :rtype: ~azure.servicebus.aio.ServiceBusSender
-
         :raises ~azure.servicebus.ServiceBusAuthenticationError: Indicates an issue in token/identity validity.
         :raises ~azure.servicebus.ServiceBusAuthorizationError: Indicates an access/rights related failure.
 
@@ -309,8 +308,9 @@ class ServiceBusSender(BaseHandler, SenderMixin):
         :type sequence_numbers: int or list[int]
         :keyword float timeout: The total operation timeout in seconds including all the retries. The value must be
          greater than 0 if specified. The default value is None, meaning no timeout.
+        :returns: None
         :rtype: None
-        :raises: ~azure.servicebus.exceptions.ServiceBusError if messages cancellation failed due to message already
+        :raises ~azure.servicebus.exceptions.ServiceBusError: if messages cancellation failed due to message already
          cancelled or enqueued.
 
         .. admonition:: Example:
@@ -359,14 +359,14 @@ class ServiceBusSender(BaseHandler, SenderMixin):
          ~azure.servicebus.amqp.AmqpAnnotatedMessage]]]
         :keyword Optional[float] timeout: The total operation timeout in seconds including all the retries.
          The value must be greater than 0 if specified. The default value is None, meaning no timeout.
+        :returns: None
         :rtype: None
-        :raises:
-                :class: ~azure.servicebus.exceptions.OperationTimeoutError if sending times out.
-                :class: ~azure.servicebus.exceptions.MessageSizeExceededError if the size of the message is over
-                  service bus frame size limit.
-                :class: ~azure.servicebus.exceptions.ServiceBusError when other errors happen such as connection
-                 error, authentication error, and any unexpected errors.
-                 It's also the top-level root class of above errors.
+        :raises ~azure.servicebus.exceptions.OperationTimeoutError: If sending times out.
+        :raises ~azure.servicebus.exceptions.MessageSizeExceededError: If the size of the message is over the
+         Service Bus frame size limit.
+        :raises ~azure.servicebus.exceptions.ServiceBusError: When other errors happen such as connection
+         error, authentication error, and any unexpected errors.
+         It's also the top-level root class of above errors.
 
         .. admonition:: Example:
 
@@ -480,7 +480,7 @@ class ServiceBusSender(BaseHandler, SenderMixin):
     def client_identifier(self) -> str:
         """
         Get the ServiceBusSender client identifier associated with the sender instance.
-
+        :returns: The client identifier associated with the sender instance.
         :rtype: str
         """
         return self._name

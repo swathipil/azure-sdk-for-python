@@ -397,6 +397,7 @@ class BaseHandler:  # pylint:disable=too-many-instance-attributes
         If the handler has already closed, this operation will do nothing. An optional exception can be passed in to
         indicate that the handler was shutdown due to error.
 
+        :returns: None
         :rtype: None
         """
         await self._close_handler()

@@ -746,7 +746,6 @@ class ServiceBusMessageBatch(object):
 class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-instance-attributes
     """
     A Service Bus Message received from service side.
-
     :ivar auto_renew_error: Error when AutoLockRenewer is used and it fails to renew the message lock.
     :vartype auto_renew_error: ~azure.servicebus.AutoLockRenewTimeout or ~azure.servicebus.AutoLockRenewFailed
 

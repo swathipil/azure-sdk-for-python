@@ -44,6 +44,7 @@ class BaseSession(object):
         """Whether the receivers lock on a particular session has expired.
 
         :rtype: bool
+        :returns: True if the lock has expired, False otherwise.
         """
         return bool(self._locked_until_utc and self._locked_until_utc <= utc_now())
 
@@ -53,6 +54,7 @@ class BaseSession(object):
         Session id of the current session.
 
         :rtype: str
+        :returns: The session id.
         """
         return self._session_id
 
@@ -61,6 +63,7 @@ class BaseSession(object):
         """The time at which this session's lock will expire.
 
         :rtype: datetime.datetime
+        :returns: The utc datetime the lock is set to expire at.
         """
         return self._locked_until_utc
 
@@ -94,7 +97,7 @@ class ServiceBusSession(BaseSession):
         :keyword float timeout: The total operation timeout in seconds including all the retries. The value must be
          greater than 0 if specified. The default value is None, meaning no timeout.
         :rtype: bytes
-        :return: The session state.
+        :returns: The session state.
 
         .. admonition:: Example:
 
