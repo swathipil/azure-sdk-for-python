@@ -245,9 +245,9 @@ class AmqpAnnotatedMessage(object):
     @property
     def body(self) -> Any:
         """The body of the Message. The format may vary depending on the body type:
-         * For ~azure.servicebus.AmqpMessageBodyType.DATA, the body could be bytes or Iterable[bytes]
-         * For ~azure.servicebus.AmqpMessageBodyType.SEQUENCE, the body could be List or Iterable[List]
-         * For ~azure.servicebus.AmqpMessageBodyType.VALUE, the body could be any type
+         * For ~azure.servicebus.AmqpMessageBodyType.DATA, the body could be bytes or Iterable[bytes].
+         * For ~azure.servicebus.AmqpMessageBodyType.SEQUENCE, the body could be List or Iterable[List].
+         * For ~azure.servicebus.AmqpMessageBodyType.VALUE, the body could be any type.
 
         :rtype: Any
         """
