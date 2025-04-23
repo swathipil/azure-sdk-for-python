@@ -251,6 +251,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
     @property
     def raw_amqp_message(self) -> AmqpAnnotatedMessage:
         """Advanced usage only. The internal AMQP message payload that is sent or received.
+
         :rtype: ~azure.servicebus.amqp.AmqpAnnotatedMessage
         """
         return self._raw_amqp_message

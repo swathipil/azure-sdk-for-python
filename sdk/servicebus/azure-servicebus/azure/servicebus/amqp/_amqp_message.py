@@ -245,9 +245,10 @@ class AmqpAnnotatedMessage(object):
     @property
     def body(self) -> Any:
         """The body of the Message. The format may vary depending on the body type:
-        For ~azure.servicebus.AmqpMessageBodyType.DATA, the body could be bytes or Iterable[bytes]
-        For ~azure.servicebus.AmqpMessageBodyType.SEQUENCE, the body could be List or Iterable[List]
-        For ~azure.servicebus.AmqpMessageBodyType.VALUE, the body could be any type.
+         * For ~azure.servicebus.AmqpMessageBodyType.DATA, the body could be bytes or Iterable[bytes]
+         * For ~azure.servicebus.AmqpMessageBodyType.SEQUENCE, the body could be List or Iterable[List]
+         * For ~azure.servicebus.AmqpMessageBodyType.VALUE, the body could be any type
+
         :rtype: Any
         """
         if self._body_type == AmqpMessageBodyType.DATA:  # pylint:disable=no-else-return
@@ -261,7 +262,8 @@ class AmqpAnnotatedMessage(object):
     @property
     def body_type(self) -> AmqpMessageBodyType:
         """The body type of the underlying AMQP message.
-        rtype: ~azure.servicebus.amqp.AmqpMessageBodyType
+
+        :rtype: ~azure.servicebus.amqp.AmqpMessageBodyType
         """
         return self._body_type
 
@@ -269,6 +271,7 @@ class AmqpAnnotatedMessage(object):
     def properties(self) -> Optional[AmqpMessageProperties]:
         """
         Properties to add to the message.
+
         :rtype: Optional[~azure.servicebus.amqp.AmqpMessageProperties]
         """
         return self._properties
@@ -321,6 +324,7 @@ class AmqpAnnotatedMessage(object):
     def header(self) -> Optional[AmqpMessageHeader]:
         """
         The message header.
+
         :rtype: Optional[~azure.servicebus.amqp.AmqpMessageHeader]
         """
         return self._header
