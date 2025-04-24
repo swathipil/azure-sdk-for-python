@@ -108,7 +108,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
 
     :param str fully_qualified_namespace: The fully qualified host name for the Service Bus namespace.
     :param credential: To authenticate to manage the entities of the ServiceBus namespace.
-    :type credential: TokenCredential
+    :type credential: ~azure.core.credentials.TokenCredential
     :keyword api_version: The Service Bus API version to use for requests. Default value is the most
      recent service version that is compatible with the current SDK. Setting to an older version may result
      in reduced feature compatibility.
@@ -317,7 +317,7 @@ class ServiceBusAdministrationClient:  # pylint:disable=too-many-public-methods
         :keyword auto_delete_on_idle: ISO 8601 timeSpan idle interval after which the queue is
          automatically deleted. The minimum duration is 5 minutes.
          Input value of either type ~datetime.timedelta or string in ISO 8601 duration format like "PT300S" is accepted.
-        :paramtype auto_delete_on_idle: ~datetime.timedelta or str or one
+        :paramtype auto_delete_on_idle: ~datetime.timedelta or str or None
         :keyword dead_lettering_on_message_expiration: A value that indicates whether this queue has dead
          letter support when a message expires.
         :paramtype dead_lettering_on_message_expiration: bool

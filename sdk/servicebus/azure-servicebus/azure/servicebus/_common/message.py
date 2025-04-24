@@ -222,6 +222,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         """DEPRECATED: Get the underlying uamqp.Message or LegacyMessage.
          This is deprecated and will be removed in a later release.
 
+        :returns: The underlying uamqp.Message or LegacyMessage.
         :rtype: uamqp.Message or LegacyMessage
         """
         warnings.warn(
@@ -253,6 +254,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         """Advanced usage only. The internal AMQP message payload that is sent or received.
 
         :rtype: ~azure.servicebus.amqp.AmqpAnnotatedMessage
+        :returns: The internal AMQP message payload that is sent or received.
         """
         return self._raw_amqp_message
 
@@ -267,6 +269,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         See Message Sessions in `https://learn.microsoft.com/azure/service-bus-messaging/message-sessions`.
 
         :rtype: str or None
+        :returns: The session identifier of the message for a sessionful entity.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -290,6 +293,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         """The user defined properties on the message.
 
         :rtype: dict[str or bytes, PrimitiveTypes] or None
+        :returns: The user defined properties on the message.
         """
         return self._raw_amqp_message.application_properties
 
@@ -309,6 +313,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         `https://learn.microsoft.com/azure/service-bus-messaging/service-bus-partitioning`.
 
         :rtype: str or None
+        :returns: The partition key for sending a message to a partitioned entity.
         """
         try:
             opt_p_key = self._raw_amqp_message.annotations.get(_X_OPT_PARTITION_KEY)  # type: ignore
@@ -342,6 +347,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         See Expiration in `https://learn.microsoft.com/azure/service-bus-messaging/message-expiration`
 
         :rtype: ~datetime.timedelta
+        :returns: The life duration of a message.
         """
         if self._raw_amqp_message.header and self._raw_amqp_message.header.time_to_live:
             return datetime.timedelta(milliseconds=self._raw_amqp_message.header.time_to_live)
@@ -382,6 +388,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         `scheduled_enqueue_time_utc` is None if not set.
 
         :rtype: ~datetime.datetime
+        :returns: The utc scheduled enqueue time to the message.
         """
         if self._raw_amqp_message.annotations:
             timestamp = self._raw_amqp_message.annotations.get(_X_OPT_SCHEDULED_ENQUEUE_TIME)
@@ -413,6 +420,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         the body could be any type.
 
         :rtype: Any
+        :returns: The body of the Message.
         """
         return self._raw_amqp_message.body
 
@@ -421,6 +429,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         """The body type of the underlying AMQP message.
 
         :rtype: ~azure.servicebus.amqp.AmqpMessageBodyType
+        :returns: The body type of the underlying AMQP message.
         """
         return self._raw_amqp_message.body_type
 
@@ -432,6 +441,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         for example "application/json".
 
         :rtype: str or None
+        :returns: The content type descriptor.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -458,6 +468,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         `https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messages-payloads?#message-routing-and-correlation`.
 
         :rtype: str or None
+        :returns: The correlation identifier.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -480,6 +491,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         fashion, similar to an email subject line.
 
         :rtype: str
+        :returns: The application specific subject.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -505,6 +517,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         feature identifies and removes second and further submissions of messages with the same message id.
 
         :rtype: str or None
+        :returns: The id to identify the message.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -534,6 +547,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         `https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messages-payloads?#message-routing-and-correlation`.
 
         :rtype: str or None
+        :returns: The address of an entity to send replies to.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -560,6 +574,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         `https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messages-payloads?#message-routing-and-correlation`.
 
         :rtype: str or None
+        :returns: The session identifier augmenting the `reply_to` address.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -590,6 +605,7 @@ class ServiceBusMessage(object):  # pylint: disable=too-many-instance-attributes
         See https://learn.microsoft.com/azure/service-bus-messaging/service-bus-auto-forwarding for more details.
 
         :rtype: str or None
+        :returns: The `to` address.
         """
         if not self._raw_amqp_message.properties:
             return None
@@ -682,6 +698,7 @@ class ServiceBusMessageBatch(object):
          This is deprecated and will be removed in a later release.
 
         :rtype: ~uamqp.BatchMessage or LegacyBatchMessage
+        :returns: The underlying uamqp.BatchMessage or LegacyBatchMessage.
         """
         warnings.warn(
             "The `message` property is deprecated and will be removed in future versions.",
@@ -717,6 +734,7 @@ class ServiceBusMessageBatch(object):
         """The maximum size of bytes data that a ServiceBusMessageBatch object can hold.
 
         :rtype: int
+        :returns: The maximum size of bytes data that a ServiceBusMessageBatch object can hold.
         """
         return self._max_size_in_bytes
 
@@ -725,6 +743,7 @@ class ServiceBusMessageBatch(object):
         """The combined size of the messages in the batch, in bytes.
 
         :rtype: int
+        :returns: The combined size of the messages in the batch, in bytes.
         """
         return self._size
 
@@ -804,6 +823,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         Whether the lock on the message has expired.
 
         :rtype: bool
+        :returns: Whether the lock on the message has expired.
         """
         try:
             if self._receiver.session:  # type: ignore
@@ -917,6 +937,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
          This is deprecated and will be removed in a later release.
 
         :rtype: LegacyMessage
+        :returns: The underlying LegacyMessage.
         """
         warnings.warn(
             "The `message` property is deprecated and will be removed in future versions.",
@@ -943,6 +964,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         Dead letter error description, when the message is received from a deadletter subqueue of an entity.
 
         :rtype: str
+        :returns: The dead letter error description.
         """
         if self._raw_amqp_message.application_properties:
             try:
@@ -959,6 +981,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         Dead letter reason, when the message is received from a deadletter subqueue of an entity.
 
         :rtype: str
+        :returns: The dead letter reason.
         """
         if self._raw_amqp_message.application_properties:
             try:
@@ -977,6 +1000,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         from the dead-letter queue to another entity. Indicates the entity in which the message was dead-lettered.
 
         :rtype: str
+        :returns: The dead letter source.
         """
         if self._raw_amqp_message.annotations:
             try:
@@ -992,6 +1016,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         or Scheduled.
 
         :rtype: ~azure.servicebus.ServiceBusMessageState
+        :returns: The message state of the message.
         """
         try:
             message_state = self._raw_amqp_message.annotations.get(MESSAGE_STATE_NAME)
@@ -1009,6 +1034,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         when a message lock expires or the message is explicitly abandoned by the receiver.
 
         :rtype: int
+        :returns: The number of deliveries that have been attempted for this message.
         """
         if self._raw_amqp_message.header:
             return self._raw_amqp_message.header.delivery_count
@@ -1021,6 +1047,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         first been assigned to the message at its original point of submission.
 
         :rtype: int
+        :returns: The sequence number that had first been assigned to the message at its original point of submission.
         """
         if self._raw_amqp_message.annotations:
             return self._raw_amqp_message.annotations.get(_X_OPT_ENQUEUE_SEQUENCE_NUMBER)
@@ -1032,6 +1059,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         The UTC datetime at which the message has been accepted and stored in the entity.
 
         :rtype: ~datetime.datetime
+        :returns: The UTC datetime at which the message has been accepted and stored in the entity.
         """
         if self._raw_amqp_message.annotations:
             timestamp = self._raw_amqp_message.annotations.get(_X_OPT_ENQUEUED_TIME)
@@ -1048,6 +1076,8 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         This property is computed from `Message.enqueued_time_utc` + `Message.time_to_live`.
 
         :rtype: ~datetime.datetime
+        :returns: The UTC datetime at which the message is marked for removal and no longer available for retrieval
+         from the entity due to expiration.
         """
         if self.enqueued_time_utc and self.time_to_live:
             return self.enqueued_time_utc + self.time_to_live
@@ -1062,6 +1092,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         Sequence numbers monotonically increase. They roll over to 0 when the 48-64 bit range is exhausted.
 
         :rtype: int
+        :returns: The unique number assigned to a message by Service Bus.
         """
         if self._raw_amqp_message.annotations:
             return self._raw_amqp_message.annotations.get(_X_OPT_SEQUENCE_NUMBER)
@@ -1074,6 +1105,8 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         is being held by the broker in PEEK_LOCK mode.
 
         :rtype:  ~uuid.UUID or str
+        :returns: The lock token for the current message serving as a reference to the lock that
+         is being held by the broker in PEEK_LOCK mode.
         """
         if self._settled:
             return None
@@ -1094,6 +1127,7 @@ class ServiceBusReceivedMessage(ServiceBusMessage):  # pylint: disable=too-many-
         is again available for retrieval.
 
         :rtype: datetime.datetime
+        :returns: The UTC datetime until which the message will be locked in the queue/subscription.
         """
         try:
             if self._settled or self._receiver.session:  # type: ignore
