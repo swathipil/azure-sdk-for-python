@@ -10,7 +10,7 @@ from azure.core.paging import ItemPaged
 from azure.core.polling import LROPoller
 from azure.core.tracing.decorator import distributed_trace
 
-from ._models import KeyVaultSecret, DeletedSecret, SecretProperties, RollSecretParametersObject
+from ._models import KeyVaultSecret, DeletedSecret, SecretProperties, RollSecretParameters
 from ._shared import KeyVaultClientBase
 from ._shared._polling import DeleteRecoverPollingMethod, KeyVaultOperationPoller
 
@@ -481,6 +481,7 @@ class SecretClient(KeyVaultClientBase):
     def roll_secret(
         self,
         name: str,
+        *,
         enabled: Optional[bool] = None,
         tags: Optional[Dict[str, str]] = None,
         content_type: Optional[str] = None,
@@ -518,7 +519,7 @@ class SecretClient(KeyVaultClientBase):
         else:
             attributes = None
 
-        parameters = RollSecretParametersObject(
+        parameters = RollSecretParameters(
             tags=tags,
             content_type=content_type,
             secret_attributes=attributes
