@@ -481,6 +481,7 @@ class SecretClient(KeyVaultClientBase):
     def roll_secret(
         self,
         name: str,
+        *,
         enabled: Optional[bool] = None,
         tags: Optional[Dict[str, str]] = None,
         content_type: Optional[str] = None,

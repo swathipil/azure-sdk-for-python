@@ -399,6 +399,7 @@ class RollSecretParametersObject(object):
 
     def __init__(
         self,
+        *,
         tags: Optional[Dict[str, str]] = None,
         content_type: Optional[str] = None,
         secret_attributes: Optional[_models.SecretAttributes] = None,
