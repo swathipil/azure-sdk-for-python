@@ -386,9 +386,8 @@ class DeletedSecret(object):
         """
         return self._scheduled_purge_date
 
-class RollSecretParametersObject(object):
+class RollSecretParameters(object):
     """Parameters for rolling a secret (creating a new version with a generated value).
-
     :param tags: Application specific metadata in the form of key-value pairs.
     :type tags: dict[str, str] or None
     :param content_type: An arbitrary string indicating the type of the secret, e.g. 'password'
