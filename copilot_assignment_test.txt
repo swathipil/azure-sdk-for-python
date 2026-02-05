@@ -1,0 +1,22 @@
+COPILOT ASSIGNMENT API TEST
+===========================
+
+This file was created by copilot-swe-agent[bot] to verify that the assignment API is working correctly.
+
+Test Details:
+-------------
+- Repository: azure-sdk-for-python
+- Branch: copilot/test-copilot-assignment-api
+- Issue: [Test] Copilot Assignment API Test
+- Timestamp: 2026-02-05T01:07:33.282Z
+- Agent: copilot-swe-agent[bot]
+
+Status: SUCCESS ✓
+
+The copilot agent has successfully:
+1. Been assigned to the issue via API
+2. Cloned and accessed the repository
+3. Created this test artifact
+4. Can commit and push changes
+
+This confirms the assignment API is functioning as expected.
