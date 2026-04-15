@@ -21,6 +21,8 @@ jobs:
         inputs:
           versionSpec: '3.10'
 
+      - template: /eng/pipelines/templates/steps/auth-dev-feed.yml
+
       - template: /eng/pipelines/templates/steps/use-venv.yml
         parameters:
           VirtualEnvironmentName: "venv-apiview-md"
