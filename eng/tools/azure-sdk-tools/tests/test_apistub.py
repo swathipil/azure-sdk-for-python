@@ -7,7 +7,6 @@ from unittest.mock import patch, MagicMock
 
 from azpysdk.apistub import apistub, get_package_wheel_path, get_cross_language_mapping_path
 
-
 # ── get_package_wheel_path() ─────────────────────────────────────────────
 
 
@@ -282,4 +281,3 @@ class TestRunOutputDirectory:
 
         assert len(captured_cmds) == 1
         assert "--skip-pylint" not in captured_cmds[0]
-
