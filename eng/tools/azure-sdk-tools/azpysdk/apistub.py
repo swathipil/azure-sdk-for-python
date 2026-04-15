@@ -101,9 +101,6 @@ class apistub(Check):
             )
             logger.info(f"Processing {package_name} for apistub check")
 
-            # install dependencies
-            self.install_dev_reqs(executable, args, package_dir)
-
             try:
                 install_into_venv(
                     executable,
