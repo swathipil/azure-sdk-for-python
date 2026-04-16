@@ -146,6 +146,12 @@ class apistub(Check):
             pkg_path = get_package_wheel_path(package_dir, staging_directory)
             pkg_path = os.path.abspath(pkg_path)
 
+            # Pre-install the package and its deps into the venv so that when
+            # apistubgen's internal _install_package() runs pip install, all
+            # dependencies are already satisfied and the call finishes instantly
+            # instead of hitting the 120s timeout under parallel CI load.
+            install_into_venv(executable, [pkg_path], package_dir)
+
             dest_dir = getattr(args, "dest_dir", None)
             if dest_dir:
                 out_token_path = os.path.join(os.path.abspath(dest_dir), package_name)
