@@ -8,7 +8,7 @@ from subprocess import CalledProcessError, run
 from .Check import Check
 from ci_tools.functions import install_into_venv, find_whl
 from ci_tools.scenario.generation import create_package_and_install
-from ci_tools.variables import discover_repo_root, set_envvar_defaults, in_ci
+from ci_tools.variables import discover_repo_root, set_envvar_defaults
 from ci_tools.logging import logger
 from ci_tools.parsing import ParsedSetup
 
@@ -106,6 +106,9 @@ class apistub(Check):
             )
             logger.info(f"Processing {package_name} for apistub check")
 
+            # install dependencies
+            self.install_dev_reqs(executable, args, package_dir)
+
             try:
                 install_into_venv(
                     executable,
@@ -116,14 +119,6 @@ class apistub(Check):
                     ],
                     package_dir,
                 )
-                if in_ci():
-                    # Install common optional dependencies that some packages require at import time.
-                    # Only installed in CI since these are not needed for local stub generation.
-                    install_into_venv(
-                        executable,
-                        ["aiohttp", "chardet", "trio", "httpx", "PyJWT"],
-                        package_dir,
-                    )
             except CalledProcessError as e:
                 logger.error(f"Failed to install dependencies: {e}")
                 return e.returncode
