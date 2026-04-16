@@ -170,7 +170,9 @@ class apistub(Check):
             logger.info("Running apistub {}.".format(cmds))
 
             try:
-                apistub_result = self.run_venv_command(executable, cmds, cwd=staging_directory, check=False, immediately_dump=False)
+                apistub_result = self.run_venv_command(
+                    executable, cmds, cwd=staging_directory, check=False, immediately_dump=False
+                )
                 if apistub_result.stdout:
                     logger.info(apistub_result.stdout)
                 if apistub_result.stderr:

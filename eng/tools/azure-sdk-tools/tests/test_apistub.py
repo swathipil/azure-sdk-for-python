@@ -112,6 +112,7 @@ class TestRunOutputDirectory:
             out_dir = cmds[out_idx + 1]
             os.makedirs(out_dir, exist_ok=True)
             open(os.path.join(out_dir, "azure-core_python.json"), "w").close()
+            return MagicMock(returncode=0, stdout=None, stderr=None)
 
         def fake_pwsh(cmd, **kwargs):
             # Simulate pwsh generating api.md
@@ -168,6 +169,7 @@ class TestRunOutputDirectory:
             out_dir = cmds[out_idx + 1]
             os.makedirs(out_dir, exist_ok=True)
             open(os.path.join(out_dir, "azure-core_python.json"), "w").close()
+            return MagicMock(returncode=0, stdout=None, stderr=None)
 
         def fake_pwsh(cmd, **kwargs):
             captured_pwsh.append(cmd)
@@ -230,6 +232,7 @@ class TestRunOutputDirectory:
             out_dir = cmds[out_idx + 1]
             os.makedirs(out_dir, exist_ok=True)
             open(os.path.join(out_dir, "azure-core_python.json"), "w").close()
+            return MagicMock(returncode=0, stdout=None, stderr=None)
 
         def fake_pwsh(cmd, **kwargs):
             return MagicMock(returncode=0, stdout=None)
@@ -271,6 +274,7 @@ class TestRunOutputDirectory:
 
         def fake_apistub_run(exe, cmds, **kwargs):
             captured_cmds.append(cmds)
+            return MagicMock(returncode=0, stdout=None, stderr=None)
 
         with patch.object(stub, "get_targeted_directories", return_value=[fake_parsed]), patch.object(
             stub, "get_executable", return_value=(sys.executable, staging)
