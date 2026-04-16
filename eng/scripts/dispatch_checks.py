@@ -512,6 +512,13 @@ In the case of an environment invoking `pytest`, results can be collected in a j
         help="Flag to disable compatibility filter while discovering packages.",
     )
 
+    parser.add_argument(
+        "--exclude-packages",
+        dest="exclude_packages",
+        default="",
+        help="Comma-separated list of package name substrings to exclude from checks.",
+    )
+
     args = parser.parse_args()
 
     configure_logging(args)
@@ -539,6 +546,15 @@ In the case of an environment invoking `pytest`, results can be collected in a j
     targeted_packages = discover_targeted_packages(
         args.glob_string, target_dir, "", args.filter_type, compatibility_filter
     )
+
+    if args.exclude_packages:
+        exclude_substrings = [s.strip() for s in args.exclude_packages.split(",") if s.strip()]
+        before = len(targeted_packages)
+        targeted_packages = [
+            p for p in targeted_packages
+            if not any(sub in os.path.basename(os.path.normpath(p)) for sub in exclude_substrings)
+        ]
+        logger.info(f"Excluded {before - len(targeted_packages)} packages matching: {exclude_substrings}")
 
     if len(targeted_packages) == 0:
         logger.info(f"No packages collected for targeting string {args.glob_string} and root dir {root_dir}. Exit 0.")

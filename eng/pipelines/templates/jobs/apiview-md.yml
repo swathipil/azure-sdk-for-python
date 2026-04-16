@@ -53,6 +53,7 @@ jobs:
             --disablecov
             --filter-type="Omit_management"
             --max-parallel 8
+            --exclude-packages="nspkg,azure-storage-extensions"
 
       # Stage only api.md files so the PR contains exclusively api.md updates.
       - bash: |
