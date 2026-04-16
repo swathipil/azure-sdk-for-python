@@ -157,10 +157,22 @@ class apistub(Check):
             logger.info("Running apistub {}.".format(cmds))
 
             try:
-                self.run_venv_command(executable, cmds, cwd=staging_directory, check=True, immediately_dump=True)
+                apistub_result = self.run_venv_command(executable, cmds, cwd=staging_directory, check=False, immediately_dump=False)
+                if apistub_result.stdout:
+                    logger.info(apistub_result.stdout)
+                if apistub_result.stderr:
+                    logger.warning(apistub_result.stderr)
+                if apistub_result.returncode != 0:
+                    logger.error(f"{package_name} apistub exited with code {apistub_result.returncode}")
+                    results.append(apistub_result.returncode)
+                    continue
                 if getattr(args, "generate_md", False):
                     token_json_path = os.path.join(out_token_path, f"{package_name}_python.json")
                     md_script = os.path.join(REPO_ROOT, "eng", "common", "scripts", "Export-APIViewMarkdown.ps1")
+                    if not os.path.exists(token_json_path):
+                        logger.error(f"Token JSON not found at expected path: {token_json_path}")
+                        results.append(1)
+                        continue
                     logger.info(f"Generating api.md for {package_name}")
                     # When no --dest-dir is given, write api.md directly into the package
                     # directory so it is tracked by git. When --dest-dir is provided, keep
