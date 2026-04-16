@@ -154,6 +154,21 @@ class apistub(Check):
                 # apistubgen handles this install itself.
                 install_into_venv(executable, [pkg_path], package_dir)
 
+                # azure-ai-evaluation's `red_team` namespace imports pyrit, but pyrit is
+                # intentionally excluded from dev_requirements.txt because
+                # `azure-ai-evaluation[redteam]` pulls pillow>=12.1 while promptflow-devkit
+                # pins pillow<11 -- a single-command resolve fails with ResolutionImpossible.
+                # Installing pyrit on its own after promptflow-devkit is already on disk
+                # lets pip upgrade pillow without re-evaluating promptflow-devkit's pin,
+                # mirroring what the team does via InjectedPackages in platform-matrix.json.
+                # apistubgen only imports modules for introspection, so the pillow mismatch
+                # is inert here.
+                if package_name == "azure-ai-evaluation":
+                    try:
+                        install_into_venv(executable, ["pyrit"], package_dir)
+                    except Exception as e:
+                        logger.warning(f"{package_name}: pyrit install failed, red_team namespace may not parse: {e}")
+
             dest_dir = getattr(args, "dest_dir", None)
             if dest_dir:
                 out_token_path = os.path.join(os.path.abspath(dest_dir), package_name)
