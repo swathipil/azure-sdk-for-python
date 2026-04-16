@@ -8,7 +8,7 @@ from subprocess import CalledProcessError, run
 from .Check import Check
 from ci_tools.functions import install_into_venv, find_whl
 from ci_tools.scenario.generation import create_package_and_install
-from ci_tools.variables import discover_repo_root, set_envvar_defaults
+from ci_tools.variables import discover_repo_root, set_envvar_defaults, in_ci
 from ci_tools.logging import logger
 from ci_tools.parsing import ParsedSetup
 
@@ -146,11 +146,13 @@ class apistub(Check):
             pkg_path = get_package_wheel_path(package_dir, staging_directory)
             pkg_path = os.path.abspath(pkg_path)
 
-            # Pre-install the package and its deps into the venv so that when
-            # apistubgen's internal _install_package() runs pip install, all
-            # dependencies are already satisfied and the call finishes instantly
-            # instead of hitting the 120s timeout under parallel CI load.
-            install_into_venv(executable, [pkg_path], package_dir)
+            if in_ci():
+                # In CI, pre-install the package and its deps into the venv so that when
+                # apistubgen's internal _install_package() runs pip install, all
+                # dependencies are already satisfied and the call finishes instantly
+                # instead of hitting the 120s timeout under parallel CI load. Locally,
+                # apistubgen handles this install itself.
+                install_into_venv(executable, [pkg_path], package_dir)
 
             dest_dir = getattr(args, "dest_dir", None)
             if dest_dir:
