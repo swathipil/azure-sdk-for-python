@@ -16,7 +16,7 @@ REPO_ROOT = discover_repo_root()
 PYTHON_VERSION_LIMIT = (3, 11)  # apistub doesn't support Python 3.11+
 
 
-def get_package_wheel_path(pkg_root: str) -> str:
+def get_package_wheel_path(pkg_root: str, staging_dir: str = None) -> str:
     # parse setup.py to get package name and version
     pkg_details = ParsedSetup.from_path(pkg_root)
 
@@ -33,7 +33,12 @@ def get_package_wheel_path(pkg_root: str) -> str:
                 )
             )
         return pkg_path
-    # Otherwise, use wheel created in staging directory, or fall back on source directory
+    # Check staging directory first (wheel built by create_package_and_install)
+    if staging_dir:
+        found_whl = find_whl(staging_dir, pkg_details.name, pkg_details.version)
+        if found_whl:
+            return os.path.join(staging_dir, found_whl)
+    # Otherwise, use wheel in source directory, or fall back on source directory
     pkg_path = find_whl(pkg_root, pkg_details.name, pkg_details.version) or pkg_root
     return pkg_path
 
@@ -116,21 +121,29 @@ class apistub(Check):
                 return e.returncode
 
             if not os.getenv("PREBUILT_WHEEL_DIR"):
-                create_package_and_install(
-                    distribution_directory=staging_directory,
-                    target_setup=package_dir,
-                    skip_install=True,
-                    cache_dir=None,
-                    work_dir=staging_directory,
-                    force_create=False,
-                    package_type="wheel",
-                    pre_download_disabled=False,
-                    python_executable=executable,
-                )
+                # Only build CPython wheels — PyPy is not needed for API stub generation
+                # and newer manylinux images may not include PyPy interpreters.
+                os.environ.setdefault("CIBW_SKIP", "pp*")
+                try:
+                    create_package_and_install(
+                        distribution_directory=staging_directory,
+                        target_setup=package_dir,
+                        skip_install=True,
+                        cache_dir=None,
+                        work_dir=staging_directory,
+                        force_create=False,
+                        package_type="wheel",
+                        pre_download_disabled=False,
+                        python_executable=executable,
+                    )
+                except Exception as e:
+                    logger.error(f"{package_name}: failed to build/install wheel: {e}")
+                    results.append(1)
+                    continue
 
             self.pip_freeze(executable)
 
-            pkg_path = get_package_wheel_path(package_dir)
+            pkg_path = get_package_wheel_path(package_dir, staging_directory)
             pkg_path = os.path.abspath(pkg_path)
 
             dest_dir = getattr(args, "dest_dir", None)
