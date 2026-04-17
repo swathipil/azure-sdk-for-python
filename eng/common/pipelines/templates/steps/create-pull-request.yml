@@ -24,18 +24,15 @@ parameters:
 
 steps:
 - template: /eng/common/pipelines/templates/steps/login-to-github.yml
+  parameters:
+    TokenOwners:
+      - azure-sdk
 
 - pwsh: |
-    Write-Host "##vso[task.setvariable variable=a-different-token]hahawhatever"
-  displayName: Set variable with dashes
-
-- pwsh: |
-    Write-Host "$(a-different-token)"
-  displayName: Access variable lowercase with dashes
-
-- pwsh: |
-    Write-Host "##vso[task.setvariable variable=azuresdk-github-pat]$(GH_TOKEN)"
+    Write-Host "##vso[task.setvariable variable=azuresdk-github-pat;issecret=true]$env:GH_TOKEN"
   displayName: Remap azuresdk-github-pat to GH_TOKEN from login-to-github
+  env:
+    GH_TOKEN: $(GH_TOKEN)
 
 - template: /eng/common/pipelines/templates/steps/git-push-changes.yml
   parameters:
