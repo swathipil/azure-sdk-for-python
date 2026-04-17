@@ -3,6 +3,7 @@ import os
 import sys
 
 from typing import Optional, List
+import subprocess
 from subprocess import CalledProcessError, run
 
 from .Check import Check
@@ -161,11 +162,17 @@ class apistub(Check):
                 # Installing pyrit on its own after promptflow-devkit is already on disk
                 # lets pip upgrade pillow without re-evaluating promptflow-devkit's pin,
                 # mirroring what the team does via InjectedPackages in platform-matrix.json.
+                # Note: we invoke pip directly (not install_into_venv) because that helper
+                # prefers uv when available, and uv enforces strict resolver behavior
+                # across the whole environment, which would reject this install.
                 # apistubgen only imports modules for introspection, so the pillow mismatch
                 # is inert here.
                 if package_name == "azure-ai-evaluation":
                     try:
-                        install_into_venv(executable, ["pyrit"], package_dir)
+                        subprocess.check_call(
+                            [executable, "-m", "pip", "install", "pyrit"],
+                            cwd=package_dir,
+                        )
                     except Exception as e:
                         logger.warning(f"{package_name}: pyrit install failed, red_team namespace may not parse: {e}")
 
