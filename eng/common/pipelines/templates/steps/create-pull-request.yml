@@ -23,6 +23,12 @@ parameters:
   OpenAsDraft: false
 
 steps:
+- template: /eng/common/pipelines/templates/steps/login-to-github.yml
+
+- pwsh: |
+    Write-Host "##vso[task.setvariable variable=azuresdk-github-pat]$(GH_TOKEN)"
+  displayName: Remap azuresdk-github-pat to GH_TOKEN from login-to-github
+
 - template: /eng/common/pipelines/templates/steps/git-push-changes.yml
   parameters:
     BaseRepoBranch: ${{ parameters.PRBranchName }}
