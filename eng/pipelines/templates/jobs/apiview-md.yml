@@ -52,6 +52,18 @@ jobs:
       # Run `azpysdk apistub --md` for all packages in parallel via dispatch_checks.py.
       # Each package is processed in its own isolated virtual environment. The generated
       # api.md is written directly into each package directory so git can detect the changes.
+      #
+      # Excluded packages (--exclude-packages):
+      #   - nspkg: namespace packages with no public API surface; apistub produces no output.
+      #   - azure-storage-extensions: contains C extension modules that are not importable
+      #     in a standard Python environment without a build step; apistub cannot introspect them.
+      #   - azure-mgmt-app, azure-mgmt-videoanalyzer, azure-mgmt-changeanalysis: last released
+      #     in 2022 and depend on the deprecated `msrest` package, which is not available in
+      #     the apistub virtual environment and causes an import error at generation time.
+      #   - azure-mgmt-apimanagement: contains two types whose names differ only by casing
+      #     (`LLMDiagnosticSettings` model and `LlmDiagnosticSettings` enum); PowerShell's
+      #     ConvertFrom-Json treats object keys case-insensitively and fails to parse the
+      #     generated token JSON. The package should rename one of these types to fix this.
       - task: PythonScript@0
         displayName: 'Regenerate api.md for all packages'
         continueOnError: true
@@ -64,7 +76,7 @@ jobs:
             --disablecov
             $(FilterTypeArg)
             --max-parallel 8
-            --exclude-packages="nspkg,azure-storage-extensions"
+            --exclude-packages="nspkg,azure-storage-extensions,azure-mgmt-app,azure-mgmt-videoanalyzer,azure-mgmt-changeanalysis,azure-mgmt-apimanagement"
 
       # Stage only api.md files so the PR contains exclusively api.md updates.
       - bash: |
