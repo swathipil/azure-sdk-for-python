@@ -44,11 +44,6 @@ jobs:
           $(PIP_EXE) install -r eng/ci_tools.txt
         displayName: 'Install CI tools'
 
-      - script: |
-          git config --global user.name "azure-sdk"
-          git config --global user.email "azuresdk@microsoft.com"
-        displayName: 'Configure git'
-
       # Run `azpysdk apistub --md` for all packages in parallel via dispatch_checks.py.
       # Each package is processed in its own isolated virtual environment. The generated
       # api.md is written directly into each package directory so git can detect the changes.

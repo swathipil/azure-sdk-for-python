@@ -27,6 +27,7 @@ steps:
   parameters:
     TokenOwners:
       - azure-sdk
+      - Azure
 
 - pwsh: |
     Write-Host "##vso[task.setvariable variable=azuresdk-github-pat;issecret=true]$env:GH_TOKEN"
