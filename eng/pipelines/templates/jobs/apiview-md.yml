@@ -44,6 +44,11 @@ jobs:
           $(PIP_EXE) install -r eng/ci_tools.txt
         displayName: 'Install CI tools'
 
+      - script: |
+          git config --global user.name "azure-sdk"
+          git config --global user.email "azuresdk@microsoft.com"
+        displayName: 'Configure git'
+
       # Run `azpysdk apistub --md` for all packages in parallel via dispatch_checks.py.
       # Each package is processed in its own isolated virtual environment. The generated
       # api.md is written directly into each package directory so git can detect the changes.
@@ -87,8 +92,14 @@ jobs:
           fi
         displayName: 'Stage and commit api.md changes'
 
+      - template: /eng/common/pipelines/templates/steps/login-to-github.yml
+        parameters:
+          TokenOwners:
+            - Azure
+
       - template: /eng/common/pipelines/templates/steps/create-pull-request.yml
         parameters:
+          AuthToken: $(GH_TOKEN)
           PRBranchName: 'automated/apiview-md-regen-$(Build.BuildId)'
           CommitMsg: '[Auto] Regenerate api.md for all packages'
           PRTitle: '[Auto] Regenerate api.md for all packages'
