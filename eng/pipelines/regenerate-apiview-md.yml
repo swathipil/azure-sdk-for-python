@@ -20,6 +20,12 @@ trigger:
 
 pr: none
 
+parameters:
+  - name: IncludeManagement
+    displayName: 'Include mgmt packages when regenerating api.md (uncheck to skip mgmt packages).'
+    type: boolean
+    default: true
+
 variables:
   - template: /eng/pipelines/templates/variables/image.yml
 
@@ -31,3 +37,5 @@ extends:
         displayName: 'Regenerate api.md'
         jobs:
           - template: /eng/pipelines/templates/jobs/apiview-md.yml
+            parameters:
+              IncludeManagement: ${{ parameters.IncludeManagement }}

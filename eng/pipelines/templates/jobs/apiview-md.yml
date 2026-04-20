@@ -1,3 +1,8 @@
+parameters:
+  - name: IncludeManagement
+    type: boolean
+    default: true
+
 jobs:
   - job: RegenerateApiMd
     displayName: 'Regenerate api.md for all packages'
@@ -10,6 +15,12 @@ jobs:
 
     variables:
       - template: /eng/pipelines/templates/variables/globals.yml
+      - ${{ if parameters.IncludeManagement }}:
+        - name: FilterTypeArg
+          value: ''
+      - ${{ else }}:
+        - name: FilterTypeArg
+          value: '--filter-type=Omit_management'
 
     steps:
       - checkout: self
@@ -51,7 +62,7 @@ jobs:
             --checks="apistub"
             --md
             --disablecov
-            --filter-type="Omit_management"
+            $(FilterTypeArg)
             --max-parallel 8
             --exclude-packages="nspkg,azure-storage-extensions"
 
