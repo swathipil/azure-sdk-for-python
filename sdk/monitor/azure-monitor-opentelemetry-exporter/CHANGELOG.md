@@ -3,10 +3,14 @@
 ## 1.0.0b52 (Unreleased)
 
 ### Features Added
+- Add support for populating SDK version from distro and Microsoft OpenTelemetry distro environment variables
+  ([#46613](https://github.com/Azure/azure-sdk-for-python/pull/46613))
 
 ### Breaking Changes
 
 ### Bugs Fixed
+- Fix `success` field on HTTP request telemetry resolving to an integer instead of a boolean when no status code is present
+  ([#46311](https://github.com/Azure/azure-sdk-for-python/pull/46311))
 
 ### Other Changes
 
