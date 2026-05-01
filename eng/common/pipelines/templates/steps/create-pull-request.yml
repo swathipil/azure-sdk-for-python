@@ -1,5 +1,5 @@
-# Expects azuresdk-github-pat is set to the PAT for azure-sdk
 # Expects the buildtools to be cloned
+# Uses GH_TOKEN from login-to-github for authentication
 
 parameters:
   BaseBranchName: $(Build.SourceBranch)
@@ -23,18 +23,6 @@ parameters:
   OpenAsDraft: false
 
 steps:
-- template: /eng/common/pipelines/templates/steps/login-to-github.yml
-  parameters:
-    TokenOwners:
-      - azure-sdk
-      - Azure
-
-- pwsh: |
-    Write-Host "##vso[task.setvariable variable=azuresdk-github-pat;issecret=true]$env:GH_TOKEN"
-  displayName: Remap azuresdk-github-pat to GH_TOKEN from login-to-github
-  env:
-    GH_TOKEN: $(GH_TOKEN)
-
 - template: /eng/common/pipelines/templates/steps/git-push-changes.yml
   parameters:
     BaseRepoBranch: ${{ parameters.PRBranchName }}
@@ -60,7 +48,7 @@ steps:
       -BaseBranch "${{ parameters.BaseBranchName }}"
       -PROwner "${{ parameters.PROwner }}"
       -PRBranch "${{ parameters.PRBranchName }}"
-      -AuthToken "$(azuresdk-github-pat)"
+      -AuthToken "$(GH_TOKEN)"
       -PRTitle "${{ parameters.PRTitle }}"
       -PRBody "${{ coalesce(parameters.PRBody, parameters.CommitMsg, parameters.PRTitle) }}"
       -PRLabels "${{ parameters.PRLabels }}"
